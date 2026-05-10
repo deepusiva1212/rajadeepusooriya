@@ -374,7 +374,19 @@ function InternshipPage() {
   const [form, setForm] = useState({ name: "", email: "", phone: "", college: "", stream: "", year: "", brand: "MyTripRaja", role: "", duration: "1 Month" });
   const [sent, setSent] = useState(false);
 
-  const handle = (e) => { e.preventDefault(); setSent(true); };
+ const handle = async (e) => { 
+    e.preventDefault(); 
+    try {
+      await addDoc(collection(db, "applications"), {
+        ...form,
+        submittedAt: serverTimestamp(),
+      });
+      setSent(true); 
+    } catch (error) {
+      console.error("Error adding document: ", error);
+      alert("There was an error submitting your application. Please try again.");
+    }
+  };
 
   return (
     <div className="min-h-screen bg-corp-offwhite pt-32 pb-24">
