@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
-
-import { collection, addDoc, serverTimestamp } from "firebase/firestore";
-import { db } from "./firebase";
+import { collection, addDoc, serverTimestamp, getDocs, query, where } from "firebase/firestore";
+import { auth, provider, db } from "./firebase";
+import { signInWithPopup, signOut } from "firebase/auth";
 
 // ─── Utility ─────────────────────────────────────────────────────────────────
 function useInView(threshold = 0.15) {
@@ -93,28 +93,10 @@ function Navbar({ view, setView }) {
 function Hero() {
   return (
     <section id="hero" className="relative min-h-screen flex items-center justify-center overflow-hidden bg-corp-blue text-center">
-      {/* Foolproof Inline CSS for Animations */}
-      <style>{`
-        @keyframes blob {
-          0% { transform: translate(0px, 0px) scale(1); }
-          50% { transform: translate(40px, -60px) scale(1.1); }
-          100% { transform: translate(-20px, 30px) scale(0.9); }
-        }
-        @keyframes blob-reverse {
-          0% { transform: translate(0px, 0px) scale(1); }
-          50% { transform: translate(-40px, 60px) scale(1.2); }
-          100% { transform: translate(30px, -30px) scale(0.8); }
-        }
-        .animate-blob { animation: blob 15s infinite alternate ease-in-out; }
-        .animate-blob-reverse { animation: blob-reverse 20s infinite alternate ease-in-out; }
-      `}</style>
-
-      {/* Animated Background blobs */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-[10%] left-[15%] w-[400px] h-[400px] bg-blue-500/10 rounded-full blur-[100px] animate-blob" />
         <div className="absolute bottom-[10%] right-[15%] w-[500px] h-[500px] bg-corp-red/10 rounded-full blur-[120px] animate-blob-reverse" />
         <div className="absolute top-[40%] right-[30%] w-[300px] h-[300px] bg-corp-gold/10 rounded-full blur-[90px] animate-blob" style={{ animationDelay: '2s' }} />
-        {/* Grid lines */}
         <svg className="absolute inset-0 w-full h-full opacity-[0.04]" xmlns="http://www.w3.org/2000/svg">
           <defs><pattern id="grid" width="60" height="60" patternUnits="userSpaceOnUse"><path d="M 60 0 L 0 0 0 60" fill="none" stroke="white" strokeWidth="0.5" /></pattern></defs>
           <rect width="100%" height="100%" fill="url(#grid)" />
@@ -132,12 +114,10 @@ function Hero() {
         </p>
 
         <div className="flex flex-wrap justify-center gap-5">
-          <a href="#about"
-            className="px-8 py-4 bg-corp-red hover:bg-corp-red-dark text-white font-bold text-sm tracking-widest uppercase transition-all duration-200 rounded-sm shadow-xl shadow-corp-red/20">
+          <a href="#about" className="px-8 py-4 bg-corp-red hover:bg-corp-red-dark text-white font-bold text-sm tracking-widest uppercase transition-all duration-200 rounded-sm shadow-xl shadow-corp-red/20">
             Discover Us
           </a>
-          <a href="#brands"
-            className="px-8 py-4 border border-white/20 hover:border-corp-gold bg-white/5 backdrop-blur-sm text-white font-bold text-sm tracking-widest uppercase transition-all duration-200 rounded-sm">
+          <a href="#brands" className="px-8 py-4 border border-white/20 hover:border-corp-gold bg-white/5 backdrop-blur-sm text-white font-bold text-sm tracking-widest uppercase transition-all duration-200 rounded-sm">
             Our Brands
           </a>
         </div>
@@ -283,8 +263,7 @@ function Brands() {
             <p className="text-gray-400 leading-relaxed mb-8">
               A comprehensive online travel and tourism platform. We provide seamless booking experiences, curated tour packages, destination research, and end-to-end travel management across India and beyond.
             </p>
-            <a href="https://www.mytripraja.com/" target="_blank" rel="noopener noreferrer" 
-               className="inline-flex items-center gap-2 text-white font-bold text-xs tracking-widest uppercase pb-1 border-b border-corp-red hover:text-corp-red transition-colors">
+            <a href="https://www.mytripraja.com/" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 text-white font-bold text-xs tracking-widest uppercase pb-1 border-b border-corp-red hover:text-corp-red transition-colors">
               Visit Website
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
             </a>
@@ -296,8 +275,7 @@ function Brands() {
             <p className="text-gray-400 leading-relaxed mb-8">
               A full-service digital marketing agency dedicated to brand growth. We specialize in search engine optimization, targeted ad campaigns, social media management, and strategic brand positioning.
             </p>
-            <a href="https://marketerraja.com/" target="_blank" rel="noopener noreferrer" 
-               className="inline-flex items-center gap-2 text-white font-bold text-xs tracking-widest uppercase pb-1 border-b border-corp-red hover:text-corp-red transition-colors">
+            <a href="https://marketerraja.com/" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 text-white font-bold text-xs tracking-widest uppercase pb-1 border-b border-corp-red hover:text-corp-red transition-colors">
               Visit Website
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
             </a>
@@ -368,31 +346,88 @@ function Contact() {
   );
 }
 
-// ─── INTERNSHIP PAGE (NEW) ───────────────────────────────────────────────────
+// ─── INTERNSHIP PAGE (UPDATED WITH AUTH & SPAM PREVENTION) ───────────────────
 function InternshipPage() {
   useEffect(() => { window.scrollTo(0, 0); }, []);
-  const [form, setForm] = useState({ name: "", email: "", phone: "", college: "", stream: "", year: "", brand: "MyTripRaja", role: "", duration: "1 Month" });
-  const [sent, setSent] = useState(false);
+  const [form, setForm] = useState({ name: "", phone: "", altPhone: "", college: "", stream: "", year: "1st Year", brand: "MyTripRaja", role: "", duration: "1 Month" });
+  
+  // New States for Security
+  const [verifiedEmail, setVerifiedEmail] = useState(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [sentAppId, setSentAppId] = useState(null);
+  const [errorMsg, setErrorMsg] = useState("");
 
- const handle = async (e) => { 
-    e.preventDefault(); 
+  const handleGoogleVerify = async () => {
+    setErrorMsg("");
     try {
+      const result = await signInWithPopup(auth, provider);
+      setVerifiedEmail(result.user.email);
+    } catch (error) {
+      console.error("Verification failed", error);
+      setErrorMsg("Verification failed. Please try again.");
+    }
+  };
+
+  const handle = async (e) => { 
+    e.preventDefault(); 
+    setErrorMsg("");
+    
+    // Strict Phone Validation (Exactly 10 digits)
+    const phoneRegex = /^[0-9]{10}$/;
+    if (!phoneRegex.test(form.phone)) {
+      setErrorMsg("Please enter a valid 10-digit primary mobile number.");
+      return;
+    }
+    if (form.altPhone && !phoneRegex.test(form.altPhone)) {
+      setErrorMsg("Secondary mobile number must be 10 digits if provided.");
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      // Spam Check: Has this Email or Phone already been used?
+      const checkRef = collection(db, "applications");
+      const emailQuery = await getDocs(query(checkRef, where("email", "==", verifiedEmail)));
+      const phoneQuery = await getDocs(query(checkRef, where("phone", "==", form.phone)));
+
+      if (!emailQuery.empty) {
+        setErrorMsg("An application with this Gmail account has already been submitted.");
+        setIsSubmitting(false);
+        return;
+      }
+      if (!phoneQuery.empty) {
+        setErrorMsg("An application with this primary phone number already exists.");
+        setIsSubmitting(false);
+        return;
+      }
+
+      // Generate Unique Application Number (e.g., RDS-2026-4921)
+      const uniqueId = "RDS-" + new Date().getFullYear() + "-" + Math.floor(1000 + Math.random() * 9000);
+
+      // Save to Database
       await addDoc(collection(db, "applications"), {
         ...form,
+        email: verifiedEmail,
+        applicationId: uniqueId,
         submittedAt: serverTimestamp(),
       });
-      setSent(true); 
+      
+      setSentAppId(uniqueId);
+      // We sign them out so the next person using the computer doesn't use their email
+      signOut(auth); 
+
     } catch (error) {
       console.error("Error adding document: ", error);
-      alert("There was an error submitting your application. Please try again.");
+      setErrorMsg("There was an error submitting your application. Please check your connection and try again.");
     }
+    setIsSubmitting(false);
   };
 
   return (
     <div className="min-h-screen bg-corp-offwhite pt-32 pb-24">
       <div className="max-w-7xl mx-auto px-6 lg:px-10">
         
-        {/* Header */}
         <div className="text-center mb-16">
           <div className="inline-flex items-center gap-2 mb-6 px-4 py-2 border border-corp-red/40 bg-corp-red/10 rounded-sm">
             <span className="text-corp-red text-xs font-bold tracking-[0.25em] uppercase">Programme 2026–27</span>
@@ -407,7 +442,6 @@ function InternshipPage() {
 
         <div className="grid lg:grid-cols-2 gap-16 items-start">
           
-          {/* Info Side */}
           <div>
             <h3 className="font-display text-2xl font-bold text-gray-900 mb-6">Available Tracks</h3>
             <div className="space-y-4 mb-10">
@@ -432,25 +466,67 @@ function InternshipPage() {
             </div>
           </div>
 
-          {/* Application Form */}
-          <div className="bg-white border border-gray-200 rounded-sm p-8 shadow-sm">
-            {sent ? (
+          <div className="bg-white border border-gray-200 rounded-sm p-8 shadow-sm relative">
+            
+            {/* SUCCESS SCREEN */}
+            {sentAppId ? (
               <div className="flex flex-col items-center justify-center h-full min-h-[400px] text-center">
+                <div className="w-16 h-16 bg-green-100 text-green-600 rounded-full flex items-center justify-center mb-6">
+                  <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7"></path></svg>
+                </div>
                 <div className="text-gray-900 font-black text-2xl mb-2">Application Received</div>
-                <p className="text-gray-500 text-base font-body">Thank you for applying. Our HR team will review your details and contact you shortly.</p>
+                <p className="text-gray-500 text-base font-body mb-6">Thank you for applying. Please save your application number below.</p>
+                
+                <div className="bg-gray-50 border border-gray-200 w-full p-6 rounded-sm mb-6">
+                  <div className="text-[10px] font-bold text-gray-400 tracking-widest uppercase mb-1">Your Application ID</div>
+                  <div className="font-mono text-2xl font-bold text-corp-red">{sentAppId}</div>
+                </div>
+                
+                <p className="text-xs text-gray-400">Our HR team will review your details and contact you shortly.</p>
               </div>
+
+            // VERIFICATION SCREEN (Before Form)
+            ) : !verifiedEmail ? (
+              <div className="flex flex-col items-center justify-center h-full min-h-[400px] text-center">
+                <div className="text-gray-900 font-black text-xl mb-4 font-display">Secure Application</div>
+                <p className="text-gray-500 text-sm font-body mb-8">To prevent spam, please verify your email address to access the internship application form.</p>
+                
+                {errorMsg && <div className="text-corp-red text-xs font-bold mb-4 bg-red-50 p-2 rounded w-full">{errorMsg}</div>}
+                
+                <button onClick={handleGoogleVerify} className="w-full flex items-center justify-center gap-3 py-4 border border-gray-300 hover:bg-gray-50 text-gray-700 font-bold text-sm tracking-widest uppercase transition-colors rounded-sm">
+                  <svg className="w-5 h-5" viewBox="0 0 24 24"><path fill="currentColor" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" /><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" /><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" /><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" /><path fill="none" d="M1 1h22v22H1z" /></svg>
+                  Verify with Google
+                </button>
+              </div>
+
+            // ACTUAL FORM
             ) : (
               <form onSubmit={handle} className="space-y-5">
-                <div className="text-gray-900 font-black text-xl mb-6 font-display border-b border-gray-100 pb-4">Internship Application</div>
+                <div className="flex justify-between items-end border-b border-gray-100 pb-4 mb-6">
+                  <div className="text-gray-900 font-black text-xl font-display">Internship Application</div>
+                  <div className="text-[10px] text-green-600 font-bold bg-green-50 px-2 py-1 rounded">✓ Verified</div>
+                </div>
                 
+                {errorMsg && <div className="text-corp-red text-xs font-bold bg-red-50 p-3 rounded-sm">{errorMsg}</div>}
+
+                <div>
+                  <label className="block text-gray-900 text-[10px] font-bold tracking-widest uppercase mb-2">Verified Email</label>
+                  <input type="text" disabled value={verifiedEmail} className="w-full px-3 py-2 border border-gray-200 bg-gray-50 text-gray-500 rounded-sm text-sm cursor-not-allowed" />
+                </div>
+
+                <div>
+                  <label className="block text-gray-900 text-[10px] font-bold tracking-widest uppercase mb-2">Full Name</label>
+                  <input type="text" required value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded-sm focus:border-corp-blue focus:ring-1 focus:ring-corp-blue text-sm" />
+                </div>
+
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-gray-900 text-[10px] font-bold tracking-widest uppercase mb-2">Full Name</label>
-                    <input type="text" required value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded-sm focus:border-corp-blue focus:ring-1 focus:ring-corp-blue text-sm" />
+                    <label className="block text-gray-900 text-[10px] font-bold tracking-widest uppercase mb-2">Primary Phone <span className="text-corp-red">*</span></label>
+                    <input type="tel" required placeholder="10 Digits" maxLength="10" value={form.phone} onChange={e => setForm({ ...form, phone: e.target.value.replace(/\D/g,'') })} className="w-full px-3 py-2 border border-gray-300 rounded-sm focus:border-corp-blue focus:ring-1 focus:ring-corp-blue text-sm" />
                   </div>
                   <div>
-                    <label className="block text-gray-900 text-[10px] font-bold tracking-widest uppercase mb-2">Phone / WhatsApp</label>
-                    <input type="tel" required value={form.phone} onChange={e => setForm({ ...form, phone: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded-sm focus:border-corp-blue focus:ring-1 focus:ring-corp-blue text-sm" />
+                    <label className="block text-gray-900 text-[10px] font-bold tracking-widest uppercase mb-2">Alt Phone (Optional)</label>
+                    <input type="tel" placeholder="10 Digits" maxLength="10" value={form.altPhone} onChange={e => setForm({ ...form, altPhone: e.target.value.replace(/\D/g,'') })} className="w-full px-3 py-2 border border-gray-300 rounded-sm focus:border-corp-blue focus:ring-1 focus:ring-corp-blue text-sm" />
                   </div>
                 </div>
 
@@ -481,7 +557,7 @@ function InternshipPage() {
                     </select>
                   </div>
                   <div>
-                    <label className="block text-gray-900 text-[10px] font-bold tracking-widest uppercase mb-2">Preferred Duration</label>
+                    <label className="block text-gray-900 text-[10px] font-bold tracking-widest uppercase mb-2">Duration</label>
                     <select value={form.duration} onChange={e => setForm({ ...form, duration: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded-sm focus:border-corp-blue focus:ring-1 focus:ring-corp-blue text-sm bg-white">
                       <option>1 Month</option><option>3 Months</option><option>6 Months</option>
                     </select>
@@ -493,7 +569,9 @@ function InternshipPage() {
                   <input type="text" placeholder="e.g. Social Media, Travel Sales" value={form.role} onChange={e => setForm({ ...form, role: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded-sm focus:border-corp-blue focus:ring-1 focus:ring-corp-blue text-sm" />
                 </div>
 
-                <button type="submit" className="w-full py-4 mt-4 bg-corp-red hover:bg-corp-red-dark text-white font-bold text-sm tracking-widest uppercase transition-colors duration-200 rounded-sm shadow-md">Submit Application</button>
+                <button type="submit" disabled={isSubmitting} className={`w-full py-4 mt-4 font-bold text-sm tracking-widest uppercase transition-colors duration-200 rounded-sm shadow-md ${isSubmitting ? 'bg-gray-400 text-white cursor-wait' : 'bg-corp-red hover:bg-corp-red-dark text-white'}`}>
+                  {isSubmitting ? 'Processing...' : 'Submit Application'}
+                </button>
               </form>
             )}
           </div>
@@ -641,8 +719,13 @@ function Footer({ setView }) {
             <p className="text-gray-400 text-sm leading-relaxed font-body max-w-xs mb-5">An enterprise built on integrity, innovation, and shared vision — proudly rooted in Tamil Nadu.</p>
             
             <div className="flex gap-4 mt-6">
+              {/* Instagram */}
               <a href="https://www.instagram.com/rajadeepusooriya/?utm_source=ig_web_button_share_sheet" target="_blank" rel="noopener noreferrer" className="w-8 h-8 rounded-sm bg-white/10 hover:bg-corp-red flex items-center justify-center text-white transition-colors duration-200">
                 <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+              </a>
+              {/* LinkedIn */}
+              <a href="https://www.linkedin.com/company/rajadeepusooriya" target="_blank" rel="noopener noreferrer" className="w-8 h-8 rounded-sm bg-white/10 hover:bg-corp-red flex items-center justify-center text-white transition-colors duration-200">
+                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/></svg>
               </a>
             </div>
           </div>
