@@ -1,7 +1,8 @@
 import { useState, useEffect, useRef } from "react";
-import { collection, addDoc, serverTimestamp, getDocs, query, where } from "firebase/firestore";
+import { collection, addDoc, serverTimestamp, doc, runTransaction } from "firebase/firestore";
 import { auth, provider, db } from "./firebase";
 import { signInWithPopup, signOut } from "firebase/auth";
+import emailjs from '@emailjs/browser';
 
 // ─── Utility ─────────────────────────────────────────────────────────────────
 function useInView(threshold = 0.15) {
@@ -346,12 +347,11 @@ function Contact() {
   );
 }
 
-// ─── INTERNSHIP PAGE (UPDATED WITH AUTH & SPAM PREVENTION) ───────────────────
+// ─── INTERNSHIP PAGE (SEQUENTIAL ID & EMAILJS) ───────────────────────────────
 function InternshipPage() {
   useEffect(() => { window.scrollTo(0, 0); }, []);
   const [form, setForm] = useState({ name: "", phone: "", altPhone: "", college: "", stream: "", year: "1st Year", brand: "MyTripRaja", role: "", duration: "1 Month" });
   
-  // New States for Security
   const [verifiedEmail, setVerifiedEmail] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [sentAppId, setSentAppId] = useState(null);
@@ -372,7 +372,6 @@ function InternshipPage() {
     e.preventDefault(); 
     setErrorMsg("");
     
-    // Strict Phone Validation (Exactly 10 digits)
     const phoneRegex = /^[0-9]{10}$/;
     if (!phoneRegex.test(form.phone)) {
       setErrorMsg("Please enter a valid 10-digit primary mobile number.");
@@ -386,24 +385,52 @@ function InternshipPage() {
     setIsSubmitting(true);
 
     try {
-      // Generate Unique Application Number (e.g., RDS-2026-4921)
-      const uniqueId = "RDS-" + new Date().getFullYear() + "-" + Math.floor(1000 + Math.random() * 9000);
+      // 1. Transaction to generate safe, sequential application numbers
+      const counterRef = doc(db, "counters", "applications");
+      const newIdNum = await runTransaction(db, async (transaction) => {
+        const counterDoc = await transaction.get(counterRef);
+        let nextNum = 1;
+        if (!counterDoc.exists()) {
+          transaction.set(counterRef, { count: 1 });
+        } else {
+          nextNum = counterDoc.data().count + 1;
+          transaction.update(counterRef, { count: nextNum });
+        }
+        return nextNum;
+      });
 
-      // Save directly to Database without reading it first
+      // Format as RDS-2026-0001
+      const uniqueId = "RDS-" + new Date().getFullYear() + "-" + String(newIdNum).padStart(4, '0');
+
+      // 2. Save to Firebase
       await addDoc(collection(db, "applications"), {
         ...form,
         email: verifiedEmail,
         applicationId: uniqueId,
         submittedAt: serverTimestamp(),
       });
-      
+
+      // 3. Send Automated Email
+      // REMEMBER TO REPLACE THESE THREE STRINGS WITH YOUR EMAILJS KEYS!
+      await emailjs.send(
+        'YOUR_SERVICE_ID', 
+        'YOUR_TEMPLATE_ID', 
+        {
+          to_name: form.name,
+          to_email: verifiedEmail,
+          application_id: uniqueId,
+          brand: form.brand,
+          role: form.role || "General Application"
+        },
+        'YOUR_PUBLIC_KEY' 
+      );
+
       setSentAppId(uniqueId);
-      // Sign them out so the next person using the computer doesn't use their email
       signOut(auth); 
 
     } catch (error) {
-      console.error("Error adding document: ", error);
-      setErrorMsg("There was an error submitting your application. Please check your connection and try again.");
+      console.error("Error submitting application: ", error);
+      setErrorMsg("There was an error submitting your application. Please try again.");
     }
     setIsSubmitting(false);
   };
@@ -459,7 +486,7 @@ function InternshipPage() {
                   <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7"></path></svg>
                 </div>
                 <div className="text-gray-900 font-black text-2xl mb-2">Application Received</div>
-                <p className="text-gray-500 text-base font-body mb-6">Thank you for applying. Please save your application number below.</p>
+                <p className="text-gray-500 text-base font-body mb-6">Thank you for applying. A confirmation email has been sent to your inbox.</p>
                 
                 <div className="bg-gray-50 border border-gray-200 w-full p-6 rounded-sm mb-6">
                   <div className="text-[10px] font-bold text-gray-400 tracking-widest uppercase mb-1">Your Application ID</div>
@@ -469,7 +496,7 @@ function InternshipPage() {
                 <p className="text-xs text-gray-400">Our HR team will review your details and contact you shortly.</p>
               </div>
 
-            // VERIFICATION SCREEN (Before Form)
+            // VERIFICATION SCREEN
             ) : !verifiedEmail ? (
               <div className="flex flex-col items-center justify-center h-full min-h-[400px] text-center">
                 <div className="text-gray-900 font-black text-xl mb-4 font-display">Secure Application</div>
