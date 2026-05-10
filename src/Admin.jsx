@@ -104,7 +104,7 @@ export default function Admin() {
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="bg-gray-50 border-b border-gray-200">
-                  <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-widest">Date</th>
+                  <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-widest">ID & Date</th>
                   <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-widest">Candidate</th>
                   <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-widest">Education</th>
                   <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-widest">Brand Track</th>
@@ -118,21 +118,26 @@ export default function Admin() {
                 ) : (
                   applications.map(app => (
                     <tr key={app.id} className="hover:bg-gray-50 transition-colors">
-                      <td className="px-6 py-4 text-sm text-gray-500 whitespace-nowrap">{app.dateStr}</td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-xs font-bold text-corp-red mb-1">{app.applicationId || "N/A"}</div>
+                        <div className="text-sm text-gray-500">{app.dateStr}</div>
+                      </td>
                       <td className="px-6 py-4"><div className="font-bold text-gray-900">{app.name}</div></td>
                       <td className="px-6 py-4">
                         <div className="text-sm text-gray-900">{app.college} ({app.year})</div>
                         <div className="text-xs text-gray-500">{app.stream}</div>
                       </td>
                       <td className="px-6 py-4">
-                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${app.brand.includes('MyTripRaja') ? 'bg-blue-100 text-blue-800' : 'bg-red-100 text-red-800'}`}>
-                          {app.brand.split(' ')[0]}
+                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${app.brand && app.brand.includes('MyTripRaja') ? 'bg-blue-100 text-blue-800' : 'bg-red-100 text-red-800'}`}>
+                          {app.brand ? app.brand.split(' ')[0] : ''}
                         </span>
                         <div className="text-xs text-gray-500 mt-1">{app.duration}</div>
                       </td>
                       <td className="px-6 py-4 text-sm text-gray-700">{app.role || "Any"}</td>
                       <td className="px-6 py-4 text-sm text-gray-600 font-mono">
-                        {app.phone}
+                        <div>P: {app.phone}</div>
+                        {app.altPhone && <div className="text-xs text-gray-400 mt-0.5">A: {app.altPhone}</div>}
+                        <div className="text-xs text-blue-600 mt-1">{app.email}</div>
                       </td>
                     </tr>
                   ))
