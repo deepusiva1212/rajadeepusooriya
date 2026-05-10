@@ -378,7 +378,7 @@ function InternshipPage() {
       setErrorMsg("Please enter a valid 10-digit primary mobile number.");
       return;
     }
-    if (form.altPhone && !phoneRegex.test(form.altPhone)) {
+    if (form.altPhone && !form.altPhone.match(/^[0-9]{10}$/)) {
       setErrorMsg("Secondary mobile number must be 10 digits if provided.");
       return;
     }
@@ -386,26 +386,10 @@ function InternshipPage() {
     setIsSubmitting(true);
 
     try {
-      // Spam Check: Has this Email or Phone already been used?
-      const checkRef = collection(db, "applications");
-      const emailQuery = await getDocs(query(checkRef, where("email", "==", verifiedEmail)));
-      const phoneQuery = await getDocs(query(checkRef, where("phone", "==", form.phone)));
-
-      if (!emailQuery.empty) {
-        setErrorMsg("An application with this Gmail account has already been submitted.");
-        setIsSubmitting(false);
-        return;
-      }
-      if (!phoneQuery.empty) {
-        setErrorMsg("An application with this primary phone number already exists.");
-        setIsSubmitting(false);
-        return;
-      }
-
       // Generate Unique Application Number (e.g., RDS-2026-4921)
       const uniqueId = "RDS-" + new Date().getFullYear() + "-" + Math.floor(1000 + Math.random() * 9000);
 
-      // Save to Database
+      // Save directly to Database without reading it first
       await addDoc(collection(db, "applications"), {
         ...form,
         email: verifiedEmail,
@@ -414,7 +398,7 @@ function InternshipPage() {
       });
       
       setSentAppId(uniqueId);
-      // We sign them out so the next person using the computer doesn't use their email
+      // Sign them out so the next person using the computer doesn't use their email
       signOut(auth); 
 
     } catch (error) {
