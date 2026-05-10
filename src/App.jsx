@@ -1,5 +1,8 @@
 import { useState, useEffect, useRef } from "react";
 
+import { collection, addDoc, serverTimestamp } from "firebase/firestore";
+import { db } from "./firebase";
+
 // ─── Utility ─────────────────────────────────────────────────────────────────
 function useInView(threshold = 0.15) {
   const ref = useRef(null);
