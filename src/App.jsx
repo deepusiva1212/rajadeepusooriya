@@ -22,7 +22,7 @@ function Navbar({ setView }) {
     return () => window.removeEventListener("scroll", fn);
   }, []);
 
-  const links = ["About", "Services", "Contact"];
+  const links = ["About", "Brands", "Contact"];
 
   const handleNavClick = (e, l) => {
     e.preventDefault();
@@ -34,28 +34,29 @@ function Navbar({ setView }) {
   };
 
   return (
-    <header className={`fixed top-0 w-full z-50 transition-all duration-300 ${scrolled ? "bg-corp-blue shadow-xl shadow-black/30" : "bg-transparent"}`}>
-      <div className="max-w-7xl mx-auto px-6 lg:px-10 flex items-center justify-between h-16 lg:h-20">
+    <header className={`fixed top-0 w-full z-50 transition-all duration-300 ${scrolled ? "bg-corp-black shadow-xl shadow-black/50" : "bg-transparent"}`}>
+      <div className="absolute top-0 w-full h-1 bg-corp-red" />
+      <div className="max-w-7xl mx-auto px-6 lg:px-10 flex items-center justify-between h-16 lg:h-20 mt-1">
         <button onClick={() => { setView("home"); window.scrollTo(0,0); }} className="flex items-center gap-3 group text-left">
           <div className="w-9 h-9 rounded bg-corp-red flex items-center justify-center text-white font-black text-sm tracking-tight leading-none select-none">
             RDS
           </div>
           <div className="hidden sm:block leading-tight">
             <span className="block text-white font-bold text-sm tracking-widest uppercase">Raja Deepu Sooriya</span>
-            <span className="block text-blue-300 text-[10px] tracking-[0.2em] uppercase">Private Limited</span>
+            <span className="block text-corp-gold text-[10px] tracking-[0.2em] uppercase mt-0.5">Private Limited</span>
           </div>
         </button>
 
         <nav className="hidden md:flex items-center gap-8">
           {links.map(l => (
             <button key={l} onClick={(e) => handleNavClick(e, l)}
-              className="text-blue-200 hover:text-white text-sm font-medium tracking-widest uppercase transition-colors duration-200 relative group">
+              className="text-gray-300 hover:text-white text-sm font-medium tracking-widest uppercase transition-colors duration-200 relative group">
               {l}
-              <span className="absolute -bottom-1 left-0 w-0 h-px bg-corp-red group-hover:w-full transition-all duration-300" />
+              <span className="absolute -bottom-1 left-0 w-0 h-px bg-corp-gold group-hover:w-full transition-all duration-300" />
             </button>
           ))}
           <button onClick={(e) => handleNavClick(e, "Contact")}
-            className="ml-4 px-5 py-2 bg-corp-red hover:bg-corp-red-mid text-white text-xs font-bold tracking-widest uppercase transition-colors duration-200 rounded-sm">
+            className="ml-4 px-5 py-2 bg-corp-red hover:bg-corp-red-dark text-white text-xs font-bold tracking-widest uppercase transition-colors duration-200 rounded-sm">
             Get In Touch
           </button>
         </nav>
@@ -67,10 +68,10 @@ function Navbar({ setView }) {
         </button>
       </div>
 
-      <div className={`md:hidden bg-corp-blue border-t border-white/10 overflow-hidden transition-all duration-300 ${open ? "max-h-60" : "max-h-0"}`}>
+      <div className={`md:hidden bg-corp-black border-t border-white/10 overflow-hidden transition-all duration-300 ${open ? "max-h-60" : "max-h-0"}`}>
         {links.map(l => (
           <button key={l} onClick={(e) => handleNavClick(e, l)}
-            className="block w-full text-left px-6 py-3 text-blue-200 hover:text-white text-sm font-medium tracking-widest uppercase border-b border-white/5">
+            className="block w-full text-left px-6 py-3 text-gray-300 hover:text-white text-sm font-medium tracking-widest uppercase border-b border-white/5">
             {l}
           </button>
         ))}
@@ -82,12 +83,10 @@ function Navbar({ setView }) {
 // ─── HERO ─────────────────────────────────────────────────────────────────────
 function Hero() {
   return (
-    <section id="hero" className="relative min-h-screen flex items-center justify-center overflow-hidden bg-corp-blue text-center">
-      {/* Animated Background blobs */}
+    <section id="hero" className="relative min-h-screen flex items-center justify-center overflow-hidden bg-corp-black text-center">
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-1/4 left-1/4 w-[400px] h-[400px] bg-corp-blue-light/20 rounded-full blur-[120px] animate-pulse" style={{ animationDuration: '8s' }} />
-        <div className="absolute bottom-1/4 right-1/4 w-[500px] h-[500px] bg-corp-red/20 rounded-full blur-[150px] animate-pulse" style={{ animationDuration: '12s' }} />
-        {/* Grid lines */}
+        <div className="absolute top-1/4 left-1/4 w-[400px] h-[400px] bg-corp-red/10 rounded-full blur-[120px] animate-pulse" style={{ animationDuration: '8s' }} />
+        <div className="absolute bottom-1/4 right-1/4 w-[500px] h-[500px] bg-corp-gold/5 rounded-full blur-[150px] animate-pulse" style={{ animationDuration: '12s' }} />
         <svg className="absolute inset-0 w-full h-full opacity-[0.03]" xmlns="http://www.w3.org/2000/svg">
           <defs>
             <pattern id="grid" width="60" height="60" patternUnits="userSpaceOnUse">
@@ -101,33 +100,30 @@ function Hero() {
       <div className="relative max-w-4xl mx-auto px-6 pt-28 pb-20 flex flex-col items-center">
         <div className="inline-flex items-center gap-2 mb-8 px-4 py-2 border border-corp-red/40 bg-corp-red/10 rounded-sm">
           <span className="w-2 h-2 rounded-full bg-corp-red animate-pulse" />
-          <span className="text-corp-red-bright text-xs font-bold tracking-[0.25em] uppercase">DPIIT Recognised Startup</span>
+          <span className="text-corp-red-light text-xs font-bold tracking-[0.25em] uppercase">DPIIT Recognised Startup</span>
         </div>
 
         <h1 className="font-display text-5xl sm:text-6xl xl:text-7xl font-black text-white leading-[1.1] tracking-tight mb-8">
-          Building Tomorrow's<br />
-          <span className="text-transparent bg-clip-text bg-gradient-to-r from-corp-red-bright to-red-400">
-            Business Legacy
-          </span>
+          Work. Grow.<br />
+          <span className="text-corp-gold">Lead.</span>
         </h1>
 
-        <p className="text-blue-100 text-lg sm:text-xl leading-relaxed max-w-2xl mb-12 font-body font-light">
+        <p className="text-gray-300 text-lg sm:text-xl leading-relaxed max-w-2xl mb-12 font-body font-light">
           Raja Deepu Sooriya Private Limited is a dynamic, innovation-driven enterprise committed to delivering exceptional value across diverse business sectors — founded on trust, integrity, and shared vision.
         </p>
 
         <div className="flex flex-wrap justify-center gap-5">
           <a href="#about"
-            className="px-8 py-4 bg-corp-red hover:bg-corp-red-mid text-white font-bold text-sm tracking-widest uppercase transition-all duration-200 rounded-sm shadow-xl shadow-corp-red/20">
+            className="px-8 py-4 bg-corp-red hover:bg-corp-red-dark text-white font-bold text-sm tracking-widest uppercase transition-all duration-200 rounded-sm shadow-xl shadow-corp-red/20">
             Discover Us
           </a>
-          <a href="#contact"
-            className="px-8 py-4 border border-white/20 hover:border-white/50 bg-white/5 backdrop-blur-sm text-white font-bold text-sm tracking-widest uppercase transition-all duration-200 rounded-sm">
-            Contact Us
+          <a href="#brands"
+            className="px-8 py-4 border border-white/20 hover:border-corp-gold bg-white/5 backdrop-blur-sm text-white font-bold text-sm tracking-widest uppercase transition-all duration-200 rounded-sm">
+            Our Brands
           </a>
         </div>
       </div>
 
-      {/* Scroll indicator */}
       <div className="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-3 animate-bounce">
         <div className="w-px h-12 bg-gradient-to-b from-white/0 to-white/40" />
         <span className="text-white/40 text-[10px] tracking-widest uppercase">Scroll</span>
@@ -140,13 +136,13 @@ function Hero() {
 function About() {
   const [ref, visible] = useInView();
   const directors = [
-    { initial: "R", name: "Raja", role: "Director & Co-Founder", desc: "Visionary leader driving corporate strategy and stakeholder relationships.", color: "corp-blue" },
-    { initial: "D", name: "Deepu", role: "Director & Co-Founder", desc: "Operations specialist ensuring seamless delivery, process excellence, and growth.", color: "corp-red" },
-    { initial: "S", name: "Sooriya", role: "Director & Co-Founder", desc: "Technology and innovation champion, building digital capabilities.", color: "corp-blue-mid" },
+    { initial: "R", name: "Raja", role: "Director & Co-Founder", desc: "Visionary leader driving corporate strategy and stakeholder relationships.", color: "bg-corp-black" },
+    { initial: "D", name: "Deepu", role: "Director & Co-Founder", desc: "Operations specialist ensuring seamless delivery, process excellence, and growth.", color: "bg-corp-red" },
+    { initial: "S", name: "Sooriya", role: "Director & Co-Founder", desc: "Technology and innovation champion, building digital capabilities.", color: "bg-corp-black" },
   ];
 
   return (
-    <section id="about" className="py-24 lg:py-32 bg-neutral-50">
+    <section id="about" className="py-24 lg:py-32 bg-corp-offwhite">
       <div ref={ref} className={`max-w-7xl mx-auto px-6 lg:px-10 transition-all duration-700 ${visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}`}>
         <div className="flex items-center gap-3 mb-4">
           <div className="w-8 h-px bg-corp-red" />
@@ -154,7 +150,7 @@ function About() {
         </div>
         <div className="grid lg:grid-cols-2 gap-16 items-start">
           <div>
-            <h2 className="font-display text-3xl sm:text-4xl xl:text-5xl font-black text-corp-blue leading-tight mb-6">
+            <h2 className="font-display text-3xl sm:text-4xl xl:text-5xl font-black text-corp-black leading-tight mb-6">
               A Partnership Built on<br /><span className="text-corp-red">Shared Vision</span>
             </h2>
             <p className="text-gray-600 text-base leading-relaxed mb-5 font-body">
@@ -165,14 +161,14 @@ function About() {
             </p>
           </div>
           <div className="space-y-4">
-            <div className="text-corp-blue font-bold text-sm tracking-widest uppercase mb-6">Board of Directors</div>
-            {directors.map((d, i) => (
-              <div key={d.name} className="flex gap-5 p-5 bg-white border border-gray-100 rounded-sm hover:shadow-lg hover:border-corp-blue/20 transition-all duration-300">
-                <div className={`w-12 h-12 flex-shrink-0 rounded-sm flex items-center justify-center text-white font-black text-lg ${d.color === "corp-red" ? "bg-corp-red" : d.color === "corp-blue-mid" ? "bg-corp-blue-mid" : "bg-corp-blue"}`}>
+            <div className="text-corp-black font-bold text-sm tracking-widest uppercase mb-6">Board of Directors</div>
+            {directors.map((d) => (
+              <div key={d.name} className="flex gap-5 p-5 bg-white border border-gray-200 rounded-sm hover:shadow-lg hover:border-corp-gold transition-all duration-300">
+                <div className={`w-12 h-12 flex-shrink-0 rounded-sm flex items-center justify-center text-white font-black text-lg ${d.color}`}>
                   {d.initial}
                 </div>
                 <div>
-                  <div className="text-corp-blue font-black text-base">{d.name}</div>
+                  <div className="text-corp-black font-black text-base">{d.name}</div>
                   <div className="text-corp-red text-xs font-bold tracking-widest uppercase mb-1">{d.role}</div>
                   <p className="text-gray-500 text-sm leading-relaxed font-body">{d.desc}</p>
                 </div>
@@ -185,40 +181,61 @@ function About() {
   );
 }
 
-// ─── SERVICES ─────────────────────────────────────────────────────────────────
-function Services() {
+// ─── BRANDS ─────────────────────────────────────────────────────────────────
+function Brands() {
   const [ref, visible] = useInView();
-  const services = [
-    { icon: "📊", title: "Business Consulting", desc: "Strategic advisory services that help businesses navigate complexity and optimise operations.", tag: "Advisory" },
-    { icon: "💻", title: "Technology Solutions", desc: "Custom digital transformation and software development tailored to your needs.", tag: "Tech" },
-    { icon: "📦", title: "Trade & Distribution", desc: "Reliable supply chain management and product distribution built on a robust network.", tag: "Commerce" },
-    { icon: "🏗️", title: "Project Management", desc: "End-to-end project execution with transparent governance and quality assurance.", tag: "Operations" },
-    { icon: "📋", title: "Compliance & Legal", desc: "Corporate governance and regulatory compliance support to keep your business solid.", tag: "Governance" },
-    { icon: "🌐", title: "Digital Marketing", desc: "Data-driven marketing strategies and brand positioning that deliver measurable ROI.", tag: "Growth" },
-  ];
 
   return (
-    <section id="services" className="py-24 lg:py-32 bg-corp-blue relative overflow-hidden">
+    <section id="brands" className="py-24 lg:py-32 bg-corp-black relative overflow-hidden">
+      <div className="absolute inset-0 opacity-[0.02]">
+        <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+          <defs><pattern id="dot" width="24" height="24" patternUnits="userSpaceOnUse"><circle cx="2" cy="2" r="1" fill="white" /></pattern></defs>
+          <rect width="100%" height="100%" fill="url(#dot)" />
+        </svg>
+      </div>
+
       <div ref={ref} className={`relative max-w-7xl mx-auto px-6 lg:px-10 transition-all duration-700 ${visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}`}>
         <div className="flex items-center gap-3 mb-4">
-          <div className="w-8 h-px bg-corp-red" />
-          <span className="text-corp-red text-xs font-bold tracking-[0.25em] uppercase">Our Services</span>
+          <div className="w-8 h-px bg-corp-gold" />
+          <span className="text-corp-gold text-xs font-bold tracking-[0.25em] uppercase">Our Enterprise</span>
         </div>
-        <div className="grid lg:grid-cols-2 gap-4 lg:gap-8 mb-16">
-          <h2 className="font-display text-3xl sm:text-4xl xl:text-5xl font-black text-white leading-tight">Business Sectors &<br />Service Offerings</h2>
+        <div className="mb-16">
+          <h2 className="font-display text-3xl sm:text-4xl xl:text-5xl font-black text-white leading-tight">
+            Operating Brands
+          </h2>
+          <p className="text-gray-400 text-base leading-relaxed mt-4 max-w-2xl font-body">
+            Raja Deepu Sooriya Private Limited manages and scales specialized brands across multiple business sectors to deliver focused, high-quality services.
+          </p>
         </div>
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
-          {services.map((s, i) => (
-            <div key={s.title} className="group relative p-6 bg-white/5 border border-white/10 rounded-sm hover:bg-white/10 hover:border-corp-red/40 transition-all duration-300">
-              <div className="absolute top-0 left-0 w-0 h-px bg-corp-red group-hover:w-full transition-all duration-500" />
-              <div className="flex items-start justify-between mb-4">
-                <span className="text-2xl">{s.icon}</span>
-                <span className="text-[10px] font-bold tracking-widest uppercase text-corp-red-bright bg-corp-red/10 px-2 py-0.5 rounded-sm">{s.tag}</span>
-              </div>
-              <h3 className="text-white font-bold text-base mb-2">{s.title}</h3>
-              <p className="text-blue-300 text-sm leading-relaxed font-body">{s.desc}</p>
-            </div>
-          ))}
+
+        <div className="grid lg:grid-cols-2 gap-8">
+          {/* Brand 1 */}
+          <div className="group bg-white/5 border border-white/10 p-10 rounded-sm hover:border-corp-red transition-all duration-500">
+            <div className="text-corp-gold text-xs font-bold tracking-widest uppercase mb-4">Travel & Tourism</div>
+            <h3 className="font-display text-3xl text-white font-bold mb-4">MyTripRaja</h3>
+            <p className="text-gray-400 leading-relaxed mb-8">
+              A comprehensive online travel and tourism platform. We provide seamless booking experiences, curated tour packages, destination research, and end-to-end travel management across India and beyond.
+            </p>
+            <a href="https://www.mytripraja.com/" target="_blank" rel="noopener noreferrer" 
+               className="inline-flex items-center gap-2 text-white font-bold text-xs tracking-widest uppercase pb-1 border-b border-corp-red hover:text-corp-red transition-colors">
+              Visit Website
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+            </a>
+          </div>
+
+          {/* Brand 2 */}
+          <div className="group bg-white/5 border border-white/10 p-10 rounded-sm hover:border-corp-red transition-all duration-500">
+            <div className="text-corp-gold text-xs font-bold tracking-widest uppercase mb-4">Digital Agency</div>
+            <h3 className="font-display text-3xl text-white font-bold mb-4">MarketerRaja</h3>
+            <p className="text-gray-400 leading-relaxed mb-8">
+              A full-service digital marketing agency dedicated to brand growth. We specialize in search engine optimization, targeted ad campaigns, social media management, and strategic brand positioning.
+            </p>
+            <a href="https://marketerraja.com/" target="_blank" rel="noopener noreferrer" 
+               className="inline-flex items-center gap-2 text-white font-bold text-xs tracking-widest uppercase pb-1 border-b border-corp-red hover:text-corp-red transition-colors">
+              Visit Website
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+            </a>
+          </div>
         </div>
       </div>
     </section>
@@ -239,41 +256,43 @@ function Contact() {
         <div className="grid lg:grid-cols-2 gap-16 items-start">
           <div>
             <div className="flex items-center gap-3 mb-4"><div className="w-8 h-px bg-corp-red" /><span className="text-corp-red text-xs font-bold tracking-[0.25em] uppercase">Contact Us</span></div>
-            <h2 className="font-display text-3xl sm:text-4xl xl:text-5xl font-black text-corp-blue leading-tight mb-6">Let's Start a<br /><span className="text-corp-red">Conversation</span></h2>
-            <div className="space-y-6 mt-10">
+            <h2 className="font-display text-3xl sm:text-4xl xl:text-5xl font-black text-corp-black leading-tight mb-6">Let's Start a<br /><span className="text-corp-red">Conversation</span></h2>
+            
+            <div className="space-y-8 mt-12 border-l-2 border-corp-red/20 pl-6">
               {[
-                ["📍", "Registered Office", "17/1 DS Apartment, Tiruchengode Road, Sankagiri — 637301, Tamil Nadu"],
-                ["🏛️", "CIN", "U79120TZ2025PTC034817"],
-                ["🔑", "GSTIN", "33AAOCR6737N1ZN"],
-              ].map(([icon, label, value]) => (
-                <div key={label} className="flex gap-4">
-                  <div className="w-12 h-12 flex-shrink-0 bg-corp-blue/5 rounded-sm flex items-center justify-center text-xl">{icon}</div>
-                  <div><div className="text-corp-blue font-bold text-xs tracking-widest uppercase mb-1">{label}</div><div className="text-gray-600 text-sm font-mono leading-relaxed">{value}</div></div>
+                ["REGISTERED OFFICE", "17/1 DS Apartment, Tiruchengode Road, Sankagiri — 637301, Tamil Nadu"],
+                ["CONTACT NUMBER", "+91 8098889088"],
+                ["CORPORATE IDENTITY NUMBER", "U79120TZ2025PTC034817"],
+                ["GSTIN", "33AAOCR6737N1ZN"],
+              ].map(([label, value]) => (
+                <div key={label}>
+                  <div className="text-corp-black font-bold text-xs tracking-widest uppercase mb-1.5">{label}</div>
+                  <div className="text-gray-600 text-sm font-mono leading-relaxed">{value}</div>
                 </div>
               ))}
             </div>
           </div>
-          <div className="bg-neutral-50 border border-gray-100 rounded-sm p-8">
+          <div className="bg-corp-offwhite border border-gray-200 rounded-sm p-8">
             {sent ? (
               <div className="flex flex-col items-center justify-center h-64 text-center">
-                <div className="w-14 h-14 bg-green-100 rounded-full flex items-center justify-center text-2xl mb-4">✅</div>
-                <div className="text-corp-blue font-black text-xl mb-2">Message Received</div>
-                <button onClick={() => setSent(false)} className="mt-6 text-corp-red text-sm font-bold underline underline-offset-2">Send Another</button>
+                <div className="text-corp-black font-black text-xl mb-2">Message Received</div>
+                <p className="text-gray-500 text-sm font-body">Thank you for reaching out. Our team will contact you shortly.</p>
+                <button onClick={() => setSent(false)} className="mt-6 text-corp-red text-sm font-bold tracking-widest uppercase border-b border-corp-red pb-1">Send Another</button>
               </div>
             ) : (
-              <form onSubmit={handle} className="space-y-5">
-                <div className="text-corp-blue font-black text-lg mb-6">Send Us a Message</div>
+              <form onSubmit={handle} className="space-y-6">
+                <div className="text-corp-black font-black text-lg mb-6 font-display">Send Us an Enquiry</div>
                 {["name", "email"].map(field => (
                   <div key={field}>
-                    <label className="block text-corp-blue text-xs font-bold tracking-widest uppercase mb-2">{field}</label>
-                    <input type={field === "email" ? "email" : "text"} required value={form[field]} onChange={e => setForm({ ...form, [field]: e.target.value })} placeholder={field === "name" ? "Your full name" : "your@email.com"} className="w-full px-4 py-3 border border-gray-200 rounded-sm focus:border-corp-blue focus:ring-1 focus:ring-corp-blue/20 transition-all font-body" />
+                    <label className="block text-corp-black text-xs font-bold tracking-widest uppercase mb-2">{field}</label>
+                    <input type={field === "email" ? "email" : "text"} required value={form[field]} onChange={e => setForm({ ...form, [field]: e.target.value })} className="w-full px-4 py-3 border border-gray-300 rounded-sm focus:border-corp-black focus:ring-1 focus:ring-corp-black transition-all font-body bg-white" />
                   </div>
                 ))}
                 <div>
-                  <label className="block text-corp-blue text-xs font-bold tracking-widest uppercase mb-2">Message</label>
-                  <textarea required rows={5} value={form.message} onChange={e => setForm({ ...form, message: e.target.value })} placeholder="How can we help you?" className="w-full px-4 py-3 border border-gray-200 rounded-sm focus:border-corp-blue focus:ring-1 focus:ring-corp-blue/20 transition-all resize-none font-body" />
+                  <label className="block text-corp-black text-xs font-bold tracking-widest uppercase mb-2">Message</label>
+                  <textarea required rows={5} value={form.message} onChange={e => setForm({ ...form, message: e.target.value })} className="w-full px-4 py-3 border border-gray-300 rounded-sm focus:border-corp-black focus:ring-1 focus:ring-corp-black transition-all resize-none font-body bg-white" />
                 </div>
-                <button type="submit" className="w-full py-3.5 bg-corp-red hover:bg-corp-red-mid text-white font-bold text-sm tracking-widest uppercase transition-colors duration-200 rounded-sm shadow-lg shadow-corp-red/20">Submit Enquiry</button>
+                <button type="submit" className="w-full py-4 bg-corp-red hover:bg-corp-red-dark text-white font-bold text-sm tracking-widest uppercase transition-colors duration-200 rounded-sm shadow-md">Submit Details</button>
               </form>
             )}
           </div>
@@ -283,14 +302,14 @@ function Contact() {
   );
 }
 
-// ─── LEGAL PAGES (Simulated Routing) ──────────────────────────────────────────
+// ─── LEGAL PAGES ──────────────────────────────────────────
 function LegalPage({ title, content }) {
   useEffect(() => { window.scrollTo(0, 0); }, []);
   return (
-    <div className="min-h-screen bg-neutral-50 pt-32 pb-24">
+    <div className="min-h-screen bg-corp-offwhite pt-32 pb-24">
       <div className="max-w-4xl mx-auto px-6 lg:px-10">
-        <h1 className="font-display text-4xl font-black text-corp-blue mb-8">{title}</h1>
-        <div className="prose prose-blue max-w-none text-gray-600 font-body leading-relaxed space-y-6">
+        <h1 className="font-display text-4xl font-black text-corp-black mb-8">{title}</h1>
+        <div className="prose max-w-none text-gray-700 font-body leading-relaxed space-y-6">
           {content}
         </div>
       </div>
@@ -302,30 +321,30 @@ const legalContent = {
   privacy: (
     <>
       <p>Last Updated: {new Date().toLocaleDateString()}</p>
-      <h3 className="text-xl font-bold text-corp-blue mt-6">1. Information We Collect</h3>
+      <h3 className="text-xl font-bold text-corp-black mt-6">1. Information We Collect</h3>
       <p>We collect information you provide directly to us when you fill out forms, request support, or communicate with us. This may include your name, email address, phone number, and any other details you choose to share.</p>
-      <h3 className="text-xl font-bold text-corp-blue mt-6">2. How We Use Your Information</h3>
+      <h3 className="text-xl font-bold text-corp-black mt-6">2. How We Use Your Information</h3>
       <p>We use the information we collect to provide, maintain, and improve our services, communicate with you, and ensure compliance with our legal obligations.</p>
-      <h3 className="text-xl font-bold text-corp-blue mt-6">3. Contact Us</h3>
+      <h3 className="text-xl font-bold text-corp-black mt-6">3. Contact Us</h3>
       <p>If you have any questions about this Privacy Policy, please contact us at our registered office in Sankagiri, Tamil Nadu.</p>
     </>
   ),
   terms: (
     <>
       <p>Last Updated: {new Date().toLocaleDateString()}</p>
-      <h3 className="text-xl font-bold text-corp-blue mt-6">1. Acceptance of Terms</h3>
+      <h3 className="text-xl font-bold text-corp-black mt-6">1. Acceptance of Terms</h3>
       <p>By accessing and using the website of Raja Deepu Sooriya Private Limited, you accept and agree to be bound by the terms and provision of this agreement.</p>
-      <h3 className="text-xl font-bold text-corp-blue mt-6">2. Intellectual Property</h3>
+      <h3 className="text-xl font-bold text-corp-black mt-6">2. Intellectual Property</h3>
       <p>All content on this site, including text, graphics, logos, and images, is the property of Raja Deepu Sooriya Private Limited and protected by applicable copyright laws.</p>
-      <h3 className="text-xl font-bold text-corp-blue mt-6">3. Governing Law</h3>
+      <h3 className="text-xl font-bold text-corp-black mt-6">3. Governing Law</h3>
       <p>These terms and conditions are governed by and construed in accordance with the laws of India, and you irrevocably submit to the exclusive jurisdiction of the courts in Tamil Nadu.</p>
     </>
   ),
   disclaimer: (
     <>
-      <h3 className="text-xl font-bold text-corp-blue mt-6">General Information</h3>
+      <h3 className="text-xl font-bold text-corp-black mt-6">General Information</h3>
       <p>The information provided by Raja Deepu Sooriya Private Limited on this website is for general informational purposes only. All information on the site is provided in good faith, however, we make no representation or warranty of any kind, express or implied, regarding the accuracy, adequacy, validity, reliability, availability, or completeness of any information on the site.</p>
-      <h3 className="text-xl font-bold text-corp-blue mt-6">External Links</h3>
+      <h3 className="text-xl font-bold text-corp-black mt-6">External Links</h3>
       <p>The site may contain links to other websites. Such external links are not investigated, monitored, or checked for accuracy by us.</p>
     </>
   )
@@ -334,48 +353,48 @@ const legalContent = {
 // ─── FOOTER ───────────────────────────────────────────────────────────────────
 function Footer({ setView }) {
   return (
-    <footer className="bg-corp-blue border-t-4 border-corp-red">
+    <footer className="bg-corp-black border-t-4 border-corp-red">
       <div className="max-w-7xl mx-auto px-6 lg:px-10 py-14">
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-10 mb-12">
           <div className="lg:col-span-2">
             <div className="flex items-center gap-3 mb-4">
               <div className="w-9 h-9 rounded bg-corp-red flex items-center justify-center text-white font-black text-sm">RDS</div>
-              <div><div className="text-white font-bold text-sm tracking-widest uppercase">Raja Deepu Sooriya</div><div className="text-blue-400 text-[10px] tracking-[0.2em] uppercase">Private Limited</div></div>
+              <div><div className="text-white font-bold text-sm tracking-widest uppercase">Raja Deepu Sooriya</div><div className="text-corp-gold text-[10px] tracking-[0.2em] uppercase mt-0.5">Private Limited</div></div>
             </div>
-            <p className="text-blue-300 text-sm leading-relaxed font-body max-w-xs mb-5">A DPIIT-recognised startup built on integrity, innovation, and shared vision — proudly rooted in Tamil Nadu.</p>
+            <p className="text-gray-400 text-sm leading-relaxed font-body max-w-xs mb-5">A DPIIT-recognised startup built on integrity, innovation, and shared vision — proudly rooted in Tamil Nadu.</p>
             
-            {/* Social Icons */}
             <div className="flex gap-4 mt-6">
-              <a href="#" className="w-8 h-8 rounded-sm bg-white/5 hover:bg-corp-red flex items-center justify-center text-white transition-colors duration-200">
-                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M24 4.557c-.883.392-1.832.656-2.828.775 1.017-.609 1.798-1.574 2.165-2.724-.951.564-2.005.974-3.127 1.195-.897-.957-2.178-1.555-3.594-1.555-3.179 0-5.515 2.966-4.797 6.045-4.091-.205-7.719-2.165-10.148-5.144-1.29 2.213-.669 5.108 1.523 6.574-.806-.026-1.566-.247-2.229-.616-.054 2.281 1.581 4.415 3.949 4.89-.693.188-1.452.232-2.224.084.626 1.956 2.444 3.379 4.6 3.419-2.07 1.623-4.678 2.348-7.29 2.04 2.179 1.397 4.768 2.212 7.548 2.212 9.142 0 14.307-7.721 13.995-14.646.962-.695 1.797-1.562 2.457-2.549z"/></svg>
-              </a>
-              <a href="#" className="w-8 h-8 rounded-sm bg-white/5 hover:bg-corp-red flex items-center justify-center text-white transition-colors duration-200">
-                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/></svg>
-              </a>
-              <a href="#" className="w-8 h-8 rounded-sm bg-white/5 hover:bg-corp-red flex items-center justify-center text-white transition-colors duration-200">
+              {/* Instagram Link */}
+              <a href="https://www.instagram.com/rajadeepusooriya/?utm_source=ig_web_button_share_sheet" target="_blank" rel="noopener noreferrer" className="w-8 h-8 rounded-sm bg-white/5 hover:bg-corp-red flex items-center justify-center text-white transition-colors duration-200">
                 <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
               </a>
             </div>
           </div>
           <div>
             <div className="text-white font-bold text-xs tracking-widest uppercase mb-5">Statutory Details</div>
-            <div className="space-y-3">
+            <div className="space-y-4">
               {[["CIN", "U79120TZ2025PTC034817"], ["GSTIN", "33AAOCR6737N1ZN"], ["Cert. No.", "DIPP219259"]].map(([k, v]) => (
-                <div key={k}><div className="text-blue-500 text-[10px] font-bold tracking-widest uppercase">{k}</div><div className="text-blue-200 text-xs font-mono leading-relaxed mt-0.5">{v}</div></div>
+                <div key={k}><div className="text-gray-500 text-[10px] font-bold tracking-widest uppercase">{k}</div><div className="text-gray-300 text-xs font-mono leading-relaxed mt-0.5">{v}</div></div>
               ))}
             </div>
           </div>
           <div>
+            <div className="text-white font-bold text-xs tracking-widest uppercase mb-5">Enterprise Brands</div>
+            <div className="space-y-3 mb-8">
+              <a href="https://www.mytripraja.com/" target="_blank" rel="noopener noreferrer" className="block text-gray-400 hover:text-corp-gold text-xs transition-colors font-body">MyTripRaja</a>
+              <a href="https://marketerraja.com/" target="_blank" rel="noopener noreferrer" className="block text-gray-400 hover:text-corp-gold text-xs transition-colors font-body">MarketerRaja</a>
+            </div>
+            
             <div className="text-white font-bold text-xs tracking-widest uppercase mb-5">Registered Address</div>
-            <address className="text-blue-300 text-xs leading-relaxed not-italic font-body mb-6">17/1 DS Apartment,<br />Tiruchengode Road,<br />Sankagiri — 637301,<br />Tamil Nadu, India</address>
+            <address className="text-gray-400 text-xs leading-relaxed not-italic font-body mb-6">17/1 DS Apartment,<br />Tiruchengode Road,<br />Sankagiri — 637301,<br />Tamil Nadu, India</address>
           </div>
         </div>
         <div className="pt-6 border-t border-white/10 flex flex-col sm:flex-row justify-between items-center gap-4">
-          <p className="text-blue-400 text-xs font-body text-center sm:text-left">© {new Date().getFullYear()} Raja Deepu Sooriya Private Limited. All rights reserved.</p>
+          <p className="text-gray-500 text-xs font-body text-center sm:text-left">© {new Date().getFullYear()} Raja Deepu Sooriya Private Limited. All rights reserved.</p>
           <div className="flex gap-6">
-            <button onClick={() => setView("privacy")} className="text-blue-500 hover:text-blue-300 text-xs transition-colors font-body">Privacy Policy</button>
-            <button onClick={() => setView("terms")} className="text-blue-500 hover:text-blue-300 text-xs transition-colors font-body">Terms of Service</button>
-            <button onClick={() => setView("disclaimer")} className="text-blue-500 hover:text-blue-300 text-xs transition-colors font-body">Disclaimer</button>
+            <button onClick={() => setView("privacy")} className="text-gray-400 hover:text-white text-xs transition-colors font-body">Privacy Policy</button>
+            <button onClick={() => setView("terms")} className="text-gray-400 hover:text-white text-xs transition-colors font-body">Terms of Service</button>
+            <button onClick={() => setView("disclaimer")} className="text-gray-400 hover:text-white text-xs transition-colors font-body">Disclaimer</button>
           </div>
         </div>
       </div>
@@ -387,7 +406,7 @@ function Footer({ setView }) {
 function WhatsAppButton() {
   return (
     <a 
-      href="https://wa.me/YOUR_PHONE_NUMBER_HERE" // <-- REPLACE WITH YOUR NUMBER
+      href="https://wa.me/918098889088"
       target="_blank" 
       rel="noopener noreferrer"
       className="fixed bottom-6 right-6 z-50 w-14 h-14 bg-[#25D366] hover:bg-[#1ebe5d] rounded-full shadow-lg shadow-green-900/20 flex items-center justify-center text-white transition-transform hover:scale-110"
@@ -411,7 +430,7 @@ export default function App() {
           <Navbar setView={setView} />
           <Hero />
           <About />
-          <Services />
+          <Brands />
           <Contact />
         </>
       ) : (
