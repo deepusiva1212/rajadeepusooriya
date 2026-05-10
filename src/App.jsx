@@ -23,11 +23,14 @@ function Navbar({ view, setView }) {
     return () => window.removeEventListener("scroll", fn);
   }, []);
 
-  const links = ["About", "Values", "Brands", "Contact"];
+  const links = ["About", "Values", "Brands", "Internships", "Contact"];
 
   const handleNavClick = (e, l) => {
     e.preventDefault();
-    if (view !== "home") {
+    if (l === "Internships") {
+      setView("internships");
+      window.scrollTo(0,0);
+    } else if (view !== "home") {
       setView("home");
       setTimeout(() => document.getElementById(l.toLowerCase())?.scrollIntoView({ behavior: "smooth" }), 100);
     } else {
@@ -87,11 +90,27 @@ function Navbar({ view, setView }) {
 function Hero() {
   return (
     <section id="hero" className="relative min-h-screen flex items-center justify-center overflow-hidden bg-corp-blue text-center">
+      {/* Foolproof Inline CSS for Animations */}
+      <style>{`
+        @keyframes blob {
+          0% { transform: translate(0px, 0px) scale(1); }
+          50% { transform: translate(40px, -60px) scale(1.1); }
+          100% { transform: translate(-20px, 30px) scale(0.9); }
+        }
+        @keyframes blob-reverse {
+          0% { transform: translate(0px, 0px) scale(1); }
+          50% { transform: translate(-40px, 60px) scale(1.2); }
+          100% { transform: translate(30px, -30px) scale(0.8); }
+        }
+        .animate-blob { animation: blob 15s infinite alternate ease-in-out; }
+        .animate-blob-reverse { animation: blob-reverse 20s infinite alternate ease-in-out; }
+      `}</style>
+
       {/* Animated Background blobs */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-[10%] left-[15%] w-[400px] h-[400px] bg-corp-blue-mid/60 rounded-full blur-[100px] animate-blob" />
+        <div className="absolute top-[10%] left-[15%] w-[400px] h-[400px] bg-blue-500/10 rounded-full blur-[100px] animate-blob" />
         <div className="absolute bottom-[10%] right-[15%] w-[500px] h-[500px] bg-corp-red/10 rounded-full blur-[120px] animate-blob-reverse" />
-        <div className="absolute top-[40%] right-[30%] w-[300px] h-[300px] bg-corp-gold/5 rounded-full blur-[90px] animate-blob" style={{ animationDelay: '2s' }} />
+        <div className="absolute top-[40%] right-[30%] w-[300px] h-[300px] bg-corp-gold/10 rounded-full blur-[90px] animate-blob" style={{ animationDelay: '2s' }} />
         {/* Grid lines */}
         <svg className="absolute inset-0 w-full h-full opacity-[0.04]" xmlns="http://www.w3.org/2000/svg">
           <defs><pattern id="grid" width="60" height="60" patternUnits="userSpaceOnUse"><path d="M 60 0 L 0 0 0 60" fill="none" stroke="white" strokeWidth="0.5" /></pattern></defs>
@@ -191,7 +210,7 @@ function About({ setView }) {
   );
 }
 
-// ─── CORE VALUES (New Section) ────────────────────────────────────────────────
+// ─── CORE VALUES ────────────────────────────────────────────────
 function CoreValues() {
   const [ref, visible] = useInView();
   const values = [
@@ -346,8 +365,133 @@ function Contact() {
   );
 }
 
+// ─── INTERNSHIP PAGE (NEW) ───────────────────────────────────────────────────
+function InternshipPage() {
+  useEffect(() => { window.scrollTo(0, 0); }, []);
+  const [form, setForm] = useState({ name: "", email: "", phone: "", college: "", stream: "", year: "", brand: "MyTripRaja", role: "", duration: "1 Month" });
+  const [sent, setSent] = useState(false);
+
+  const handle = (e) => { e.preventDefault(); setSent(true); };
+
+  return (
+    <div className="min-h-screen bg-corp-offwhite pt-32 pb-24">
+      <div className="max-w-7xl mx-auto px-6 lg:px-10">
+        
+        {/* Header */}
+        <div className="text-center mb-16">
+          <div className="inline-flex items-center gap-2 mb-6 px-4 py-2 border border-corp-red/40 bg-corp-red/10 rounded-sm">
+            <span className="text-corp-red text-xs font-bold tracking-[0.25em] uppercase">Programme 2026–27</span>
+          </div>
+          <h1 className="font-display text-4xl lg:text-6xl font-black text-gray-900 leading-tight mb-6">
+            Work. <span className="text-corp-red">Grow.</span> <span className="text-corp-gold">Lead.</span>
+          </h1>
+          <p className="text-gray-600 text-lg max-w-2xl mx-auto font-body">
+            Real work. Real clients. Real impact. Join our enterprise and build hands-on skills across Travel Technology & Digital Marketing.
+          </p>
+        </div>
+
+        <div className="grid lg:grid-cols-2 gap-16 items-start">
+          
+          {/* Info Side */}
+          <div>
+            <h3 className="font-display text-2xl font-bold text-gray-900 mb-6">Available Tracks</h3>
+            <div className="space-y-4 mb-10">
+              <div className="p-5 bg-white border-l-4 border-corp-red shadow-sm">
+                <h4 className="font-bold text-gray-900 text-sm tracking-widest uppercase mb-2">1 Month: Short Track</h4>
+                <p className="text-gray-600 text-sm">Orientation + guided live tasks + one focused mini project. Receives Internship Certificate.</p>
+              </div>
+              <div className="p-5 bg-white border-l-4 border-corp-gold shadow-sm">
+                <h4 className="font-bold text-gray-900 text-sm tracking-widest uppercase mb-2">3 Months: Standard Track</h4>
+                <p className="text-gray-600 text-sm">Full involvement in your chosen role. Own a project from start to finish. Receives Certificate + Live Project Experience Letter.</p>
+              </div>
+              <div className="p-5 bg-corp-blue border-l-4 border-corp-red shadow-sm">
+                <h4 className="font-bold text-white text-sm tracking-widest uppercase mb-2">6 Months: Advanced Track</h4>
+                <p className="text-gray-300 text-sm">Deep specialisation. Lead projects independently. Receives Certificate + Letter + Portfolio Projects.</p>
+              </div>
+            </div>
+
+            <h3 className="font-display text-2xl font-bold text-gray-900 mb-6">Eligibility & Mode</h3>
+            <div className="p-6 bg-white border border-gray-200 rounded-sm mb-10">
+              <p className="text-gray-600 text-sm mb-4"><strong>Streams:</strong> Any stream welcome (BBA, B.Com, B.Tech, Arts, Diploma, etc.). No prior experience required.</p>
+              <p className="text-gray-600 text-sm"><strong>Work Mode:</strong> Offline (In-Office) at our Sankagiri Headquarters to ensure maximum learning and real-time mentorship.</p>
+            </div>
+          </div>
+
+          {/* Application Form */}
+          <div className="bg-white border border-gray-200 rounded-sm p-8 shadow-sm">
+            {sent ? (
+              <div className="flex flex-col items-center justify-center h-full min-h-[400px] text-center">
+                <div className="text-gray-900 font-black text-2xl mb-2">Application Received</div>
+                <p className="text-gray-500 text-base font-body">Thank you for applying. Our HR team will review your details and contact you shortly.</p>
+              </div>
+            ) : (
+              <form onSubmit={handle} className="space-y-5">
+                <div className="text-gray-900 font-black text-xl mb-6 font-display border-b border-gray-100 pb-4">Internship Application</div>
+                
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-gray-900 text-[10px] font-bold tracking-widest uppercase mb-2">Full Name</label>
+                    <input type="text" required value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded-sm focus:border-corp-blue focus:ring-1 focus:ring-corp-blue text-sm" />
+                  </div>
+                  <div>
+                    <label className="block text-gray-900 text-[10px] font-bold tracking-widest uppercase mb-2">Phone / WhatsApp</label>
+                    <input type="tel" required value={form.phone} onChange={e => setForm({ ...form, phone: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded-sm focus:border-corp-blue focus:ring-1 focus:ring-corp-blue text-sm" />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-gray-900 text-[10px] font-bold tracking-widest uppercase mb-2">College Name & Location</label>
+                  <input type="text" required value={form.college} onChange={e => setForm({ ...form, college: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded-sm focus:border-corp-blue focus:ring-1 focus:ring-corp-blue text-sm" />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-gray-900 text-[10px] font-bold tracking-widest uppercase mb-2">Course / Stream</label>
+                    <input type="text" required placeholder="e.g. M.Com, BBA" value={form.stream} onChange={e => setForm({ ...form, stream: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded-sm focus:border-corp-blue focus:ring-1 focus:ring-corp-blue text-sm" />
+                  </div>
+                  <div>
+                    <label className="block text-gray-900 text-[10px] font-bold tracking-widest uppercase mb-2">Year of Study</label>
+                    <select value={form.year} onChange={e => setForm({ ...form, year: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded-sm focus:border-corp-blue focus:ring-1 focus:ring-corp-blue text-sm bg-white">
+                      <option>1st Year</option><option>2nd Year</option><option>3rd Year</option><option>Final Year</option><option>Graduated</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4 pt-2">
+                  <div>
+                    <label className="block text-gray-900 text-[10px] font-bold tracking-widest uppercase mb-2">Preferred Brand</label>
+                    <select value={form.brand} onChange={e => setForm({ ...form, brand: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded-sm focus:border-corp-blue focus:ring-1 focus:ring-corp-blue text-sm bg-white">
+                      <option>MyTripRaja (Travel)</option>
+                      <option>MarketerRaja (Marketing)</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-gray-900 text-[10px] font-bold tracking-widest uppercase mb-2">Preferred Duration</label>
+                    <select value={form.duration} onChange={e => setForm({ ...form, duration: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded-sm focus:border-corp-blue focus:ring-1 focus:ring-corp-blue text-sm bg-white">
+                      <option>1 Month</option><option>3 Months</option><option>6 Months</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-gray-900 text-[10px] font-bold tracking-widest uppercase mb-2">Preferred Role (Optional)</label>
+                  <input type="text" placeholder="e.g. Social Media, Travel Sales" value={form.role} onChange={e => setForm({ ...form, role: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded-sm focus:border-corp-blue focus:ring-1 focus:ring-corp-blue text-sm" />
+                </div>
+
+                <button type="submit" className="w-full py-4 mt-4 bg-corp-red hover:bg-corp-red-dark text-white font-bold text-sm tracking-widest uppercase transition-colors duration-200 rounded-sm shadow-md">Submit Application</button>
+              </form>
+            )}
+          </div>
+
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ─── DETAILED PAGES (About & Directors) ──────────────────────────────────────
 function AboutMorePage() {
+  useEffect(() => { window.scrollTo(0, 0); }, []);
   return (
     <div className="min-h-screen bg-corp-offwhite pt-32 pb-24">
       <div className="max-w-4xl mx-auto px-6 lg:px-10">
@@ -381,6 +525,7 @@ function AboutMorePage() {
 }
 
 function DirectorPage({ id }) {
+  useEffect(() => { window.scrollTo(0, 0); }, []);
   const directorsData = {
     raja: {
       fullName: "Raja",
@@ -508,9 +653,9 @@ function Footer({ setView }) {
         <div className="pt-6 border-t border-white/10 flex flex-col sm:flex-row justify-between items-center gap-4">
           <p className="text-gray-400 text-xs font-body text-center sm:text-left">© {new Date().getFullYear()} Raja Deepu Sooriya Private Limited. All rights reserved.</p>
           <div className="flex gap-6">
-            <button onClick={() => setView("privacy")} className="text-gray-400 hover:text-white text-xs transition-colors font-body">Privacy Policy</button>
-            <button onClick={() => setView("terms")} className="text-gray-400 hover:text-white text-xs transition-colors font-body">Terms of Service</button>
-            <button onClick={() => setView("disclaimer")} className="text-gray-400 hover:text-white text-xs transition-colors font-body">Disclaimer</button>
+            <button onClick={() => { setView("privacy"); window.scrollTo(0,0); }} className="text-gray-400 hover:text-white text-xs transition-colors font-body">Privacy Policy</button>
+            <button onClick={() => { setView("terms"); window.scrollTo(0,0); }} className="text-gray-400 hover:text-white text-xs transition-colors font-body">Terms of Service</button>
+            <button onClick={() => { setView("disclaimer"); window.scrollTo(0,0); }} className="text-gray-400 hover:text-white text-xs transition-colors font-body">Disclaimer</button>
           </div>
         </div>
       </div>
@@ -553,15 +698,11 @@ export default function App() {
         </>
       )}
 
+      {view === "internships" && <InternshipPage />}
       {view === "about-more" && <AboutMorePage />}
-      
       {view.startsWith("director-") && <DirectorPage id={view.replace("director-", "")} />}
-
       {["privacy", "terms", "disclaimer"].includes(view) && (
-        <LegalPage 
-          title={view === "privacy" ? "Privacy Policy" : view === "terms" ? "Terms of Service" : "Disclaimer"} 
-          content={legalContent[view]} 
-        />
+        <LegalPage title={view === "privacy" ? "Privacy Policy" : view === "terms" ? "Terms of Service" : "Disclaimer"} content={legalContent[view]} />
       )}
 
       <Footer setView={setView} />
