@@ -791,7 +791,8 @@ function WhatsAppButton() {
 
 // ─── MAIN APP ENTRY ───────────────────────────────────────────────────────────
 export default function App() {
-  const [view, setView] = useState("home");
+  // This checks the URL. If it ends in /internships, it opens the form directly!
+  const [view, setView] = useState(window.location.pathname === "/internships" ? "internships" : "home");
 
   return (
     <div className="font-body antialiased relative">
