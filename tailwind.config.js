@@ -4,12 +4,13 @@ export default {
   theme: {
     extend: {
       colors: {
-        "corp-blue":       "#051528",   // Darker Navy for a more premium look
-        "corp-blue-mid":   "#0E2A50",   // Slate Blue
-        "corp-blue-light": "#1D4ED8",   // Bright Blue
-        "corp-red":        "#A11212",   // Sharper Crimson
-        "corp-red-mid":    "#C81E1E",   // Crimson hover
-        "corp-red-bright": "#E02424",   // Bright Red
+        "corp-black":      "#0a0a0a",   // Primary Dark Background
+        "corp-red":        "#C8102E",   // Primary Red
+        "corp-red-dark":   "#9b0d22",   // Dark Red
+        "corp-red-light":  "#ff2244",   // Bright Accent Red
+        "corp-gold":       "#D4A017",   // Primary Gold
+        "corp-gold-light": "#f0c040",   // Light Gold Accent
+        "corp-offwhite":   "#f9f6f1",   // Warm Off-White for light sections
       },
       fontFamily: {
         display: ["'Playfair Display'", "Georgia", "serif"],
