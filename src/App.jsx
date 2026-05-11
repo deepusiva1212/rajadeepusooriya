@@ -359,6 +359,7 @@ function InternshipPage() {
   useEffect(() => { window.scrollTo(0, 0); }, []);
   const [form, setForm] = useState({ name: "", phone: "", altPhone: "", college: "", stream: "", year: "1st Year", brand: "MyTripRaja", role: "", duration: "1 Month" });
   
+  const [resumeFile, setResumeFile] = useState(null);
   const [verifiedEmail, setVerifiedEmail] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [sentAppId, setSentAppId] = useState(null);
