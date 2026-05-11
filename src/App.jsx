@@ -3,6 +3,7 @@ import { collection, addDoc, serverTimestamp, doc, runTransaction } from "fireba
 import { auth, provider, db } from "./firebase";
 import { signInWithPopup, signOut } from "firebase/auth";
 import emailjs from '@emailjs/browser';
+import Background from "./Background"; // IMPORTING YOUR NEW FILE
 
 // ─── Utility ─────────────────────────────────────────────────────────────────
 function useInView(threshold = 0.15) {
@@ -93,17 +94,8 @@ function Navbar({ view, setView }) {
 // ─── HERO ─────────────────────────────────────────────────────────────────────
 function Hero() {
   return (
-    <section id="hero" className="relative min-h-screen flex items-center justify-center overflow-hidden bg-corp-blue text-center">
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-[10%] left-[15%] w-[400px] h-[400px] bg-blue-500/10 rounded-full blur-[100px] animate-blob" />
-        <div className="absolute bottom-[10%] right-[15%] w-[500px] h-[500px] bg-corp-red/10 rounded-full blur-[120px] animate-blob-reverse" />
-        <div className="absolute top-[40%] right-[30%] w-[300px] h-[300px] bg-corp-gold/10 rounded-full blur-[90px] animate-blob" style={{ animationDelay: '2s' }} />
-        <svg className="absolute inset-0 w-full h-full opacity-[0.04]" xmlns="http://www.w3.org/2000/svg">
-          <defs><pattern id="grid" width="60" height="60" patternUnits="userSpaceOnUse"><path d="M 60 0 L 0 0 0 60" fill="none" stroke="white" strokeWidth="0.5" /></pattern></defs>
-          <rect width="100%" height="100%" fill="url(#grid)" />
-        </svg>
-      </div>
-
+    // Replaced solid background color with transparent so the Antigravity Canvas shines through!
+    <section id="hero" className="relative min-h-screen flex items-center justify-center overflow-hidden bg-transparent text-center">
       <div className="relative max-w-4xl mx-auto px-6 pt-28 pb-20 flex flex-col items-center">
         <h1 className="font-display text-5xl sm:text-6xl xl:text-7xl font-black text-white leading-[1.1] tracking-tight mb-8">
           Work. Grow.<br />
@@ -235,14 +227,8 @@ function Brands() {
   const [ref, visible] = useInView();
 
   return (
-    <section id="brands" className="py-24 lg:py-32 bg-corp-blue relative overflow-hidden">
-      <div className="absolute inset-0 opacity-[0.02]">
-        <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
-          <defs><pattern id="dot" width="24" height="24" patternUnits="userSpaceOnUse"><circle cx="2" cy="2" r="1" fill="white" /></pattern></defs>
-          <rect width="100%" height="100%" fill="url(#dot)" />
-        </svg>
-      </div>
-
+    // Background changed to transparent to allow antigravity effects
+    <section id="brands" className="py-24 lg:py-32 bg-transparent relative overflow-hidden">
       <div ref={ref} className={`relative max-w-7xl mx-auto px-6 lg:px-10 transition-all duration-700 ${visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}`}>
         <div className="flex items-center gap-3 mb-4">
           <div className="w-8 h-px bg-corp-gold" />
@@ -258,7 +244,7 @@ function Brands() {
         </div>
 
         <div className="grid lg:grid-cols-2 gap-8">
-          <div className="group bg-white/5 border border-white/10 p-10 rounded-sm hover:border-corp-red transition-all duration-500 backdrop-blur-sm">
+          <div className="group bg-corp-blue-mid/80 border border-white/10 p-10 rounded-sm hover:border-corp-red transition-all duration-500 backdrop-blur-md">
             <div className="text-corp-gold text-xs font-bold tracking-widest uppercase mb-4">Travel & Tourism</div>
             <h3 className="font-display text-3xl text-white font-bold mb-4">MyTripRaja</h3>
             <p className="text-gray-400 leading-relaxed mb-8">
@@ -270,7 +256,7 @@ function Brands() {
             </a>
           </div>
 
-          <div className="group bg-white/5 border border-white/10 p-10 rounded-sm hover:border-corp-red transition-all duration-500 backdrop-blur-sm">
+          <div className="group bg-corp-blue-mid/80 border border-white/10 p-10 rounded-sm hover:border-corp-red transition-all duration-500 backdrop-blur-md">
             <div className="text-corp-gold text-xs font-bold tracking-widest uppercase mb-4">Digital Agency</div>
             <h3 className="font-display text-3xl text-white font-bold mb-4">MarketerRaja</h3>
             <p className="text-gray-400 leading-relaxed mb-8">
@@ -292,8 +278,26 @@ function Contact() {
   const [ref, visible] = useInView();
   const [form, setForm] = useState({ name: "", email: "", message: "" });
   const [sent, setSent] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handle = (e) => { e.preventDefault(); setSent(true); setForm({ name: "", email: "", message: "" }); };
+  const handle = async (e) => { 
+    e.preventDefault(); 
+    setIsSubmitting(true);
+    
+    try {
+      await addDoc(collection(db, "enquiries"), {
+        ...form,
+        submittedAt: serverTimestamp(),
+      });
+      
+      setSent(true); 
+      setForm({ name: "", email: "", message: "" }); 
+    } catch (error) {
+      console.error("Error sending message: ", error);
+      alert("There was an error sending your message. Please try again.");
+    }
+    setIsSubmitting(false);
+  };
 
   return (
     <section id="contact" className="py-24 lg:py-32 bg-corp-offwhite">
@@ -337,7 +341,9 @@ function Contact() {
                   <label className="block text-gray-900 text-xs font-bold tracking-widest uppercase mb-2">Message</label>
                   <textarea required rows={5} value={form.message} onChange={e => setForm({ ...form, message: e.target.value })} className="w-full px-4 py-3 border border-gray-300 rounded-sm focus:border-corp-blue focus:ring-1 focus:ring-corp-blue transition-all resize-none font-body bg-white" />
                 </div>
-                <button type="submit" className="w-full py-4 bg-corp-red hover:bg-corp-red-dark text-white font-bold text-sm tracking-widest uppercase transition-colors duration-200 rounded-sm shadow-md">Submit Details</button>
+                <button type="submit" disabled={isSubmitting} className={`w-full py-4 font-bold text-sm tracking-widest uppercase transition-colors duration-200 rounded-sm shadow-md ${isSubmitting ? 'bg-gray-400 text-white cursor-wait' : 'bg-corp-red hover:bg-corp-red-dark text-white'}`}>
+                  {isSubmitting ? 'Sending...' : 'Submit Details'}
+                </button>
               </form>
             )}
           </div>
@@ -347,7 +353,7 @@ function Contact() {
   );
 }
 
-// ─── INTERNSHIP PAGE (SEQUENTIAL ID & EMAILJS) ───────────────────────────────
+// ─── INTERNSHIP PAGE ───────────────────────────────
 function InternshipPage() {
   useEffect(() => { window.scrollTo(0, 0); }, []);
   const [form, setForm] = useState({ name: "", phone: "", altPhone: "", college: "", stream: "", year: "1st Year", brand: "MyTripRaja", role: "", duration: "1 Month" });
@@ -385,7 +391,7 @@ function InternshipPage() {
     setIsSubmitting(true);
 
     try {
-      // 1. Transaction to generate safe, sequential application numbers
+      // Transaction to generate safe, sequential application numbers
       const counterRef = doc(db, "counters", "applications");
       const newIdNum = await runTransaction(db, async (transaction) => {
         const counterDoc = await transaction.get(counterRef);
@@ -399,10 +405,9 @@ function InternshipPage() {
         return nextNum;
       });
 
-      // Format as RDS-2026-0001
       const uniqueId = "RDS-" + new Date().getFullYear() + "-" + String(newIdNum).padStart(4, '0');
 
-      // 2. Save to Firebase
+      // Save to Firebase
       await addDoc(collection(db, "applications"), {
         ...form,
         email: verifiedEmail,
@@ -410,8 +415,7 @@ function InternshipPage() {
         submittedAt: serverTimestamp(),
       });
 
-      // 3. Send Automated Email
-      // 3. Send Automated Email using .env variables
+      // Send Automated Email via .env keys
       await emailjs.send(
         import.meta.env.VITE_EMAILJS_SERVICE_ID, 
         import.meta.env.VITE_EMAILJS_TEMPLATE_ID, 
@@ -424,6 +428,7 @@ function InternshipPage() {
         },
         import.meta.env.VITE_EMAILJS_PUBLIC_KEY 
       );
+
       setSentAppId(uniqueId);
       signOut(auth); 
 
@@ -729,11 +734,9 @@ function Footer({ setView }) {
             <p className="text-gray-400 text-sm leading-relaxed font-body max-w-xs mb-5">An enterprise built on integrity, innovation, and shared vision — proudly rooted in Tamil Nadu.</p>
             
             <div className="flex gap-4 mt-6">
-              {/* Instagram */}
               <a href="https://www.instagram.com/rajadeepusooriya/?utm_source=ig_web_button_share_sheet" target="_blank" rel="noopener noreferrer" className="w-8 h-8 rounded-sm bg-white/10 hover:bg-corp-red flex items-center justify-center text-white transition-colors duration-200">
                 <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
               </a>
-              {/* LinkedIn */}
               <a href="https://www.linkedin.com/company/rajadeepusooriya" target="_blank" rel="noopener noreferrer" className="w-8 h-8 rounded-sm bg-white/10 hover:bg-corp-red flex items-center justify-center text-white transition-colors duration-200">
                 <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/></svg>
               </a>
@@ -790,11 +793,11 @@ function WhatsAppButton() {
 
 // ─── MAIN APP ENTRY ───────────────────────────────────────────────────────────
 export default function App() {
-  // This checks the URL. If it ends in /internships, it opens the form directly!
   const [view, setView] = useState(window.location.pathname === "/internships" ? "internships" : "home");
 
   return (
     <div className="font-body antialiased relative">
+      <Background />
       <Navbar view={view} setView={setView} />
       
       {view === "home" && (
