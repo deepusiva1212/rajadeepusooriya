@@ -409,34 +409,43 @@ function InternshipPage() {
 
       const uniqueId = "RDS-" + new Date().getFullYear() + "-" + String(newIdNum).padStart(4, '0');
 
-      // Save to Firebase
+      // 3. Save Data to Firestore (Including the Resume URL)
       await addDoc(collection(db, "applications"), {
         ...form,
         email: verifiedEmail,
         applicationId: uniqueId,
+        resumeUrl: downloadURL, 
         submittedAt: serverTimestamp(),
       });
 
-      // Send Automated Email via .env keys
-      await emailjs.send(
-        import.meta.env.VITE_EMAILJS_SERVICE_ID, 
-        import.meta.env.VITE_EMAILJS_TEMPLATE_ID, 
-        {
-          to_name: form.name,
-          to_email: verifiedEmail,
-          application_id: uniqueId,
-          brand: form.brand,
-          role: form.role || "General Application"
-        },
-        import.meta.env.VITE_EMAILJS_PUBLIC_KEY 
-      );
+      // 4. Send Email (Wrapped in its own safety bubble!)
+      try {
+        await emailjs.send(
+          import.meta.env.VITE_EMAILJS_SERVICE_ID, 
+          import.meta.env.VITE_EMAILJS_TEMPLATE_ID, 
+          {
+            to_name: form.name,
+            to_email: verifiedEmail,
+            application_id: uniqueId,
+            brand: form.brand,
+            role: form.role || "General Application"
+          },
+          import.meta.env.VITE_EMAILJS_PUBLIC_KEY 
+        );
+      } catch (emailError) {
+        // If the email fails, we just log it for the developers. 
+        // We DO NOT stop the user's success screen!
+        console.error("Database save succeeded, but automated email failed to send: ", emailError);
+      }
 
+      // 5. Show Success Screen
       setSentAppId(uniqueId);
       signOut(auth); 
 
     } catch (error) {
-      console.error("Error submitting application: ", error);
-      setErrorMsg("There was an error submitting your application. Please try again.");
+      // This only triggers if the Database or Storage fails
+      console.error("Error submitting: ", error);
+      setErrorMsg("There was an error processing your application. Please try again.");
     }
     setIsSubmitting(false);
   };
