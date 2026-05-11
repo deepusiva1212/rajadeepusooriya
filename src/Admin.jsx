@@ -19,13 +19,23 @@ export default function Admin() {
   const [search, setSearch] = useState("");
   const [filterBrand, setFilterBrand] = useState("All Brands");
   const [filterYear, setFilterYear] = useState("All Years");
-  const [showDuplicatesOnly, setShowDuplicatesOnly] = useState(false); // NEW: Duplicate filter state
+  const [showDuplicatesOnly, setShowDuplicatesOnly] = useState(false);
+
+  // NEW: Toast Notification State
+  const [toast, setToast] = useState({ show: false, message: "", type: "success" });
+
+  // NEW: Helper function to trigger a toast
+  const showToast = (message, type = "success") => {
+    setToast({ show: true, message, type });
+    // Auto-hide after 3 seconds
+    setTimeout(() => setToast({ show: false, message: "", type: "success" }), 3000);
+  };
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       if (currentUser && currentUser.email === ADMIN_EMAIL) {
         setUser(currentUser);
-        fetchAllData();
+        fetchAllData(false); // Silent fetch on load
       } else {
         setUser(null);
         if (currentUser) signOut(auth);
@@ -35,7 +45,7 @@ export default function Admin() {
     return () => unsubscribe();
   }, []);
 
-  const fetchAllData = async () => {
+  const fetchAllData = async (showNotification = true) => {
     setLoadingData(true);
     try {
       const qApps = query(collection(db, "applications"), orderBy("submittedAt", "desc"));
@@ -53,7 +63,14 @@ export default function Admin() {
         ...doc.data(),
         dateStr: doc.data().submittedAt ? doc.data().submittedAt.toDate().toLocaleString('en-IN', { dateStyle: 'short', timeStyle: 'short' }) : "Just now"
       })));
-    } catch (e) { console.error(e); }
+      
+      // Trigger success toast if manually refreshed
+      if (showNotification) showToast("Database Synced Successfully");
+      
+    } catch (e) { 
+      console.error(e); 
+      if (showNotification) showToast("Failed to sync data", "error");
+    }
     setLoadingData(false);
   };
 
@@ -61,10 +78,15 @@ export default function Admin() {
     try {
       await updateDoc(doc(db, "applications", appId), { status: newStatus });
       setApplications(applications.map(app => app.id === appId ? { ...app, status: newStatus } : app));
-    } catch (e) { alert("Update failed"); }
+      
+      // Trigger Toast on Status Change
+      showToast(`Candidate status updated to ${newStatus}`);
+      
+    } catch (e) { 
+      showToast("Failed to update status. Check connection.", "error"); 
+    }
   };
 
-  // ─── EXPORT TO EXCEL (CSV) ────────────────────────────────────────────────
   const exportToCSV = () => {
     const headers = ["App ID,Date,Name,Email,Phone,College,Year,Brand,Duration,Role,Status"];
     const rows = applications.map(a => 
@@ -78,26 +100,23 @@ export default function Admin() {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+
+    // Trigger Toast on Export
+    showToast("Excel Report Downloaded");
   };
 
-  // ─── HELPER LOGIC ────────────────────────────────────────────────────────
-  // Duplicate check logic
   const isDuplicate = (val, field) => {
     if (!val) return false;
     return applications.filter(a => a[field] === val).length > 1;
   };
 
-  // College count calculation
   const collegeCounts = applications.reduce((acc, app) => {
     if (app.college) { acc[app.college] = (acc[app.college] || 0) + 1; }
     return acc;
   }, {});
 
-  // ─── ADVANCED FILTERING & SORTING LOGIC ──────────────────────────────────
   let filteredApps = applications.filter(app => {
     const searchStr = search.toLowerCase();
-    
-    // UPDATED: Now searches Name, College, Email, AND Phone Number!
     const matchesSearch = 
       (app.name && app.name.toLowerCase().includes(searchStr)) || 
       (app.college && app.college.toLowerCase().includes(searchStr)) || 
@@ -107,14 +126,11 @@ export default function Admin() {
 
     const matchesBrand = filterBrand === "All Brands" || (app.brand && app.brand.includes(filterBrand));
     const matchesYear = filterYear === "All Years" || app.year === filterYear;
-    
-    // If the duplicate button is clicked, hide everyone who is NOT a duplicate
     const matchesDup = showDuplicatesOnly ? (isDuplicate(app.phone, 'phone') || isDuplicate(app.email, 'email')) : true;
     
     return matchesSearch && matchesBrand && matchesYear && matchesDup;
   });
 
-  // UPDATED: Group identical duplicates together so they appear side-by-side
   if (showDuplicatesOnly) {
     filteredApps.sort((a, b) => {
       const emailA = a.email || "";
@@ -123,7 +139,6 @@ export default function Admin() {
     });
   }
 
-  // ─── RENDER ──────────────────────────────────────────────────────────────
   if (loadingAuth) return <div className="min-h-screen bg-gray-50 flex items-center justify-center font-bold uppercase tracking-widest text-xs">RDS Auth Check...</div>;
 
   if (!user) return (
@@ -138,7 +153,22 @@ export default function Admin() {
   );
 
   return (
-    <div className="min-h-screen bg-gray-50 font-body">
+    <div className="min-h-screen bg-gray-50 font-body relative overflow-hidden">
+      
+      {/* ─── NEW: THE TOAST COMPONENT ─── */}
+      <div 
+        className={`fixed bottom-8 right-8 z-[100] flex items-center gap-3 px-6 py-4 rounded-sm shadow-2xl bg-white border-l-4 transition-all duration-300 ${
+          toast.show ? "translate-y-0 opacity-100" : "translate-y-10 opacity-0 pointer-events-none"
+        } ${toast.type === 'success' ? 'border-green-500' : 'border-corp-red'}`}
+      >
+        {toast.type === 'success' ? (
+          <svg className="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path></svg>
+        ) : (
+          <svg className="w-5 h-5 text-corp-red" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+        )}
+        <span className="text-sm font-bold text-gray-800 tracking-wide">{toast.message}</span>
+      </div>
+
       <header className="bg-corp-blue text-white py-4 px-8 flex justify-between items-center shadow-md">
         <div className="flex items-center gap-4">
           <div className="w-8 h-8 bg-corp-red font-black flex items-center justify-center rounded-sm text-sm">RDS</div>
@@ -158,7 +188,6 @@ export default function Admin() {
             </div>
           </div>
           <div className="flex flex-wrap gap-3">
-            {/* NEW: Duplicate Audit Button */}
             <button 
               onClick={() => setShowDuplicatesOnly(!showDuplicatesOnly)} 
               className={`px-5 py-2.5 rounded-sm text-[10px] font-bold tracking-widest uppercase transition-colors shadow-sm border ${showDuplicatesOnly ? 'bg-orange-100 text-orange-700 border-orange-300' : 'bg-white text-gray-700 border-gray-200 hover:bg-gray-50'}`}
@@ -166,7 +195,7 @@ export default function Admin() {
               {showDuplicatesOnly ? "⚠️ Clear Audit" : "Audit Duplicates"}
             </button>
             <button onClick={exportToCSV} className="bg-corp-gold text-white px-5 py-2.5 rounded-sm text-[10px] font-bold tracking-widest uppercase hover:bg-yellow-700 transition-colors shadow-sm">Export to Excel</button>
-            <button onClick={fetchAllData} className="bg-white border border-gray-200 text-gray-700 px-5 py-2.5 rounded-sm text-[10px] font-bold tracking-widest uppercase hover:bg-gray-50">{loadingData ? "Refreshing..." : "Refresh Data"}</button>
+            <button onClick={() => fetchAllData(true)} className="bg-white border border-gray-200 text-gray-700 px-5 py-2.5 rounded-sm text-[10px] font-bold tracking-widest uppercase hover:bg-gray-50">{loadingData ? "Refreshing..." : "Refresh Data"}</button>
           </div>
         </div>
 
@@ -221,7 +250,7 @@ export default function Admin() {
                           <select 
                             value={app.status || "Pending"} 
                             onChange={(e) => updateApplicationStatus(app.id, e.target.value)}
-                            className={`text-[9px] font-black tracking-widest uppercase rounded-sm px-2 py-1 border outline-none cursor-pointer
+                            className={`text-[9px] font-black tracking-widest uppercase rounded-sm px-2 py-1 border outline-none cursor-pointer transition-colors
                               ${(!app.status || app.status === 'Pending') ? 'bg-yellow-50 text-yellow-700 border-yellow-200' : ''}
                               ${app.status === 'Reviewed' ? 'bg-blue-50 text-blue-700 border-blue-200' : ''}
                               ${app.status === 'Interviewing' ? 'bg-purple-50 text-purple-700 border-purple-200' : ''}
