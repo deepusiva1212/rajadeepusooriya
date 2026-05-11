@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { auth, provider, db } from "./firebase";
 import { signInWithPopup, signOut, onAuthStateChanged } from "firebase/auth";
-import { collection, getDocs, query, orderBy } from "firebase/firestore";
+import { collection, getDocs, query, orderBy, doc, updateDoc } from "firebase/firestore";
 
 const ADMIN_EMAIL = "deepusiva2017@gmail.com"; 
 
@@ -56,6 +56,21 @@ export default function Admin() {
       console.error("Error fetching data:", error);
     }
     setLoadingData(false);
+  };
+  
+  const updateApplicationStatus = async (appId, newStatus) => {
+    try {
+      const appRef = doc(db, "applications", appId);
+      await updateDoc(appRef, { status: newStatus });
+      
+      // Update the screen instantly without reloading
+      setApplications(applications.map(app => 
+        app.id === appId ? { ...app, status: newStatus } : app
+      ));
+    } catch (error) {
+      console.error("Error updating status:", error);
+      alert("Failed to update status.");
+    }
   };
 
   if (loadingAuth) return <div className="min-h-screen bg-gray-50 flex items-center justify-center">Loading...</div>;
@@ -122,7 +137,26 @@ export default function Admin() {
                         <div className="text-xs font-bold text-corp-red mb-1">{app.applicationId || "N/A"}</div>
                         <div className="text-sm text-gray-500">{app.dateStr}</div>
                       </td>
-                      <td className="px-6 py-4"><div className="font-bold text-gray-900">{app.name}</div></td>
+                      <td className="px-6 py-4">
+  <div className="font-bold text-gray-900 mb-2">{app.name}</div>
+  <select 
+    value={app.status || "Pending"} 
+    onChange={(e) => updateApplicationStatus(app.id, e.target.value)}
+    className={`text-[10px] font-bold tracking-widest uppercase rounded-sm px-2 py-1 border outline-none cursor-pointer transition-colors
+      ${(!app.status || app.status === 'Pending') ? 'bg-yellow-50 text-yellow-700 border-yellow-200' : ''}
+      ${app.status === 'Reviewed' ? 'bg-blue-50 text-blue-700 border-blue-200' : ''}
+      ${app.status === 'Interviewing' ? 'bg-purple-50 text-purple-700 border-purple-200' : ''}
+      ${app.status === 'Selected' ? 'bg-green-50 text-green-700 border-green-200' : ''}
+      ${app.status === 'Rejected' ? 'bg-gray-100 text-gray-500 border-gray-200' : ''}
+    `}
+  >
+    <option value="Pending">Pending</option>
+    <option value="Reviewed">Reviewed</option>
+    <option value="Interviewing">Interviewing</option>
+    <option value="Selected">Selected</option>
+    <option value="Rejected">Rejected</option>
+  </select>
+</td>
                       <td className="px-6 py-4">
                         <div className="text-sm text-gray-900">{app.college} ({app.year})</div>
                         <div className="text-xs text-gray-500">{app.stream}</div>
