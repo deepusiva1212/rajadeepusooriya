@@ -4,6 +4,7 @@ import { auth, provider, db } from "./firebase";
 import { signInWithPopup, signOut } from "firebase/auth";
 import emailjs from '@emailjs/browser';
 import Background from "./Background"; // IMPORTING YOUR NEW FILE
+import ResumeUpload from "./ResumeUpload"; // <-- for resume
 
 // ─── Utility ─────────────────────────────────────────────────────────────────
 function useInView(threshold = 0.15) {
@@ -549,8 +550,9 @@ function InternshipPage() {
                   <label className="block text-gray-900 text-[10px] font-bold tracking-widest uppercase mb-2">College Name & Location</label>
                   <input type="text" required value={form.college} onChange={e => setForm({ ...form, college: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded-sm focus:border-corp-blue focus:ring-1 focus:ring-corp-blue text-sm" />
                 </div>
+                <ResumeUpload resumeFile={resumeFile} setResumeFile={setResumeFile} />
 
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-2 gap-4 pt-2">
                   <div>
                     <label className="block text-gray-900 text-[10px] font-bold tracking-widest uppercase mb-2">Course / Stream</label>
                     <input type="text" required placeholder="e.g. M.Com, BBA" value={form.stream} onChange={e => setForm({ ...form, stream: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded-sm focus:border-corp-blue focus:ring-1 focus:ring-corp-blue text-sm" />
