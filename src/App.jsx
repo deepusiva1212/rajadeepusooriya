@@ -411,10 +411,10 @@ function InternshipPage() {
       });
 
       // 3. Send Automated Email
-      // REMEMBER TO REPLACE THESE THREE STRINGS WITH YOUR EMAILJS KEYS!
+      // 3. Send Automated Email using .env variables
       await emailjs.send(
-        'YOUR_SERVICE_ID', 
-        'YOUR_TEMPLATE_ID', 
+        import.meta.env.VITE_EMAILJS_SERVICE_ID, 
+        import.meta.env.VITE_EMAILJS_TEMPLATE_ID, 
         {
           to_name: form.name,
           to_email: verifiedEmail,
@@ -422,9 +422,8 @@ function InternshipPage() {
           brand: form.brand,
           role: form.role || "General Application"
         },
-        'YOUR_PUBLIC_KEY' 
+        import.meta.env.VITE_EMAILJS_PUBLIC_KEY 
       );
-
       setSentAppId(uniqueId);
       signOut(auth); 
 
