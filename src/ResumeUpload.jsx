@@ -1,4 +1,40 @@
+import { useState } from "react";
+
 export default function ResumeUpload({ resumeFile, setResumeFile }) {
+  const [fileError, setFileError] = useState("");
+
+  const handleFileChange = (e) => {
+    setFileError(""); // Clear previous errors
+    const file = e.target.files[0];
+    
+    if (!file) return;
+
+    // 1. Validate File Size (Max 5MB)
+    const maxSize = 5 * 1024 * 1024; // 5MB in bytes
+    if (file.size > maxSize) {
+      setFileError("File is too large. Maximum size is 5MB.");
+      setResumeFile(null);
+      e.target.value = null; // Reset the input
+      return;
+    }
+
+    // 2. Validate File Type
+    const allowedTypes = [
+      "application/pdf", 
+      "application/msword", 
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+    ];
+    if (!allowedTypes.includes(file.type)) {
+      setFileError("Invalid file type. Please upload a PDF or Word Document.");
+      setResumeFile(null);
+      e.target.value = null;
+      return;
+    }
+
+    // If it passes both checks, save it!
+    setResumeFile(file);
+  };
+
   return (
     <div className="p-4 border border-dashed border-gray-300 bg-gray-50 rounded-sm">
       <label className="block text-gray-900 text-[10px] font-bold tracking-widest uppercase mb-2">
@@ -9,12 +45,17 @@ export default function ResumeUpload({ resumeFile, setResumeFile }) {
         type="file" 
         required 
         accept=".pdf,.doc,.docx" 
-        // This updates the file state in your main App.jsx!
-        onChange={e => setResumeFile(e.target.files[0])} 
+        onChange={handleFileChange} 
         className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-sm file:border-0 file:text-xs file:font-bold file:tracking-widest file:uppercase file:bg-corp-blue file:text-white hover:file:bg-corp-blue-mid cursor-pointer transition-colors" 
       />
       
-      {resumeFile && (
+      {fileError && (
+        <div className="text-xs text-corp-red mt-2 font-bold bg-red-50 p-2 rounded-sm inline-block">
+          ⚠ {fileError}
+        </div>
+      )}
+      
+      {resumeFile && !fileError && (
         <div className="text-xs text-green-600 mt-2 font-bold">
           ✓ Attached: {resumeFile.name}
         </div>
