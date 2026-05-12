@@ -7,92 +7,82 @@ export default function Background() {
     const canvas = canvasRef.current;
     const ctx = canvas.getContext("2d");
     let animationFrameId;
+    let particles = [];
 
-    // Set canvas to full window size
     const resize = () => {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
+      // Handle high-DPI displays (like mobile phones) for crisp lines
+      const dpr = window.devicePixelRatio || 1;
+      canvas.width = window.innerWidth * dpr;
+      canvas.height = window.innerHeight * dpr;
+      ctx.scale(dpr, dpr);
+      canvas.style.width = `${window.innerWidth}px`;
+      canvas.style.height = `${window.innerHeight}px`;
+      initParticles();
     };
-    window.addEventListener("resize", resize);
-    resize();
 
-    // Corporate Colors with low opacity for the glowing effect
-    const colors = [
-      "rgba(200, 16, 46, 0.15)",   // Corp Red
-      "rgba(212, 160, 23, 0.15)",  // Corp Gold
-      "rgba(15, 41, 64, 0.4)",     // Mid Blue
-      "rgba(59, 130, 246, 0.1)"    // Light Blue accent
-    ];
-
-    // Antigravity Particle Class
-    class Orb {
+    class Particle {
       constructor() {
-        this.radius = Math.random() * 150 + 50; // Random size between 50 and 200
-        this.x = Math.random() * canvas.width;
-        this.y = Math.random() * canvas.height;
-        // Random drift speed (Zero Gravity effect)
-        this.vx = (Math.random() - 0.5) * 1.5; 
-        this.vy = (Math.random() - 0.5) * 1.5;
-        this.color = colors[Math.floor(Math.random() * colors.length)];
+        this.x = Math.random() * window.innerWidth;
+        this.y = Math.random() * window.innerHeight;
+        this.vx = (Math.random() - 0.5) * 0.5; // Very slow drift
+        this.vy = (Math.random() - 0.5) * 0.5;
+        this.radius = Math.random() * 1.5 + 0.5;
       }
-
       update() {
         this.x += this.vx;
         this.y += this.vy;
-
-        // Bounce off walls smoothly (Antigravity boundaries)
-        if (this.x - this.radius < 0 || this.x + this.radius > canvas.width) {
-          this.vx *= -1;
-        }
-        if (this.y - this.radius < 0 || this.y + this.radius > canvas.height) {
-          this.vy *= -1;
-        }
+        if (this.x < 0 || this.x > window.innerWidth) this.vx *= -1;
+        if (this.y < 0 || this.y > window.innerHeight) this.vy *= -1;
       }
-
       draw() {
         ctx.beginPath();
-        // Create a glowing gradient
-        const gradient = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, this.radius);
-        gradient.addColorStop(0, this.color);
-        gradient.addColorStop(1, "transparent");
-        
-        ctx.fillStyle = gradient;
         ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+        ctx.fillStyle = "rgba(255, 255, 255, 0.3)";
         ctx.fill();
       }
     }
 
-    // Create 15 floating orbs
-    const orbs = [];
-    for (let i = 0; i < 15; i++) {
-      orbs.push(new Orb());
-    }
+    const initParticles = () => {
+      particles = [];
+      // Fewer particles on mobile so it doesn't look cluttered
+      const numParticles = window.innerWidth < 768 ? 40 : 100;
+      for (let i = 0; i < numParticles; i++) {
+        particles.push(new Particle());
+      }
+    };
 
-    // Animation Loop
     const render = () => {
-      // Clear the canvas with the deep corporate blue
-      ctx.fillStyle = "#051324"; 
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      // Deep corporate blue background
+      ctx.fillStyle = "#051324";
+      ctx.fillRect(0, 0, window.innerWidth, window.innerHeight);
 
-      // Draw subtle grid lines
-      ctx.strokeStyle = "rgba(255,255,255,0.03)";
-      ctx.lineWidth = 0.5;
-      for (let i = 0; i < canvas.width; i += 60) {
-        ctx.beginPath(); ctx.moveTo(i, 0); ctx.lineTo(i, canvas.height); ctx.stroke();
+      for (let i = 0; i < particles.length; i++) {
+        particles[i].update();
+        particles[i].draw();
+
+        // Connect particles with lines if they are close
+        for (let j = i + 1; j < particles.length; j++) {
+          const dx = particles[i].x - particles[j].x;
+          const dy = particles[i].y - particles[j].y;
+          const distance = Math.sqrt(dx * dx + dy * dy);
+
+          // Connection distance
+          if (distance < 120) {
+            ctx.beginPath();
+            // Line opacity fades out the further away they get
+            ctx.strokeStyle = `rgba(212, 160, 23, ${0.15 - distance / 800})`; // Corp Gold tint
+            ctx.lineWidth = 0.5;
+            ctx.moveTo(particles[i].x, particles[i].y);
+            ctx.lineTo(particles[j].x, particles[j].y);
+            ctx.stroke();
+          }
+        }
       }
-      for (let i = 0; i < canvas.height; i += 60) {
-        ctx.beginPath(); ctx.moveTo(0, i); ctx.lineTo(canvas.width, i); ctx.stroke();
-      }
-
-      // Update and draw floating orbs
-      orbs.forEach(orb => {
-        orb.update();
-        orb.draw();
-      });
-
       animationFrameId = requestAnimationFrame(render);
     };
 
+    window.addEventListener("resize", resize);
+    resize();
     render();
 
     return () => {
@@ -101,10 +91,5 @@ export default function Background() {
     };
   }, []);
 
-  return (
-    <canvas 
-      ref={canvasRef} 
-      className="fixed top-0 left-0 w-full h-full -z-10 pointer-events-none"
-    />
-  );
+  return <canvas ref={canvasRef} className="fixed top-0 left-0 -z-10 pointer-events-none" />;
 }
