@@ -9,8 +9,8 @@ export default function ResumeUpload({ resumeFile, setResumeFile }) {
     if (!file) return;
 
     // Validate File Size (Max 5MB)
-    if (file.size > 5 * 1024 * 1024) {
-      setFileError("File is too large. Maximum size is 5MB.");
+    if (file.size > 2 * 1024 * 1024) {
+   setFileError("File is too large. Maximum size is 2MB.");
       setResumeFile(null);
       e.target.value = null; 
       return;
@@ -48,7 +48,7 @@ export default function ResumeUpload({ resumeFile, setResumeFile }) {
       
       {fileError && <div className="text-xs text-corp-red mt-2 font-bold bg-red-50 p-2 rounded-sm inline-block">⚠ {fileError}</div>}
       {resumeFile && !fileError && <div className="text-xs text-green-600 mt-2 font-bold">✓ Attached: {resumeFile.name}</div>}
-      <p className="text-[10px] text-gray-400 mt-2">Max file size: 5MB</p>
+      <p className="text-[10px] text-gray-400 mt-2">Max file size: 2MB</p>
     </div>
   );
 }
