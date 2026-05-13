@@ -33,7 +33,7 @@ export default function ResumeUpload({ resumeFile, setResumeFile }) {
   };
 
   return (
-    <div className="p-4 border border-dashed border-gray-300 bg-gray-50 rounded-sm">
+    <div className="p-4 border border-dashed border-gray-300 bg-white rounded-sm">
       <label className="block text-gray-900 text-[10px] font-bold tracking-widest uppercase mb-2">
         Upload Resume / CV (PDF or Word) <span className="text-corp-red">*</span>
       </label>
