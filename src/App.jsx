@@ -6,6 +6,8 @@ import emailjs from '@emailjs/browser';
 import Background from "./Background";
 import ResumeUpload from "./ResumeUpload";
 import InternshipPage from "./InternshipPage";
+import InternshipTerms from "./InternshipTerms";     
+import InternshipPrivacy from "./InternshipPrivacy";
 
 // ─── Utility ─────────────────────────────────────────────────────────────────
 function useInView(threshold = 0.15) {
@@ -486,6 +488,8 @@ export default function App() {
       )}
 
       {view === "internships" && <InternshipPage />}
+      {view === "internship-terms" && <InternshipTerms />}     
+      {view === "internship-privacy" && <InternshipPrivacy />}
       {view === "about-more" && <AboutMorePage />}
       {view.startsWith("director-") && <DirectorPage id={view.replace("director-", "")} />}
       {["privacy", "terms", "disclaimer"].includes(view) && (
