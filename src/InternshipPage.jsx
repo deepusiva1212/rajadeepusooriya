@@ -24,7 +24,7 @@ export default function InternshipPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [sentAppId, setSentAppId] = useState(null);
   const [errorMsg, setErrorMsg] = useState("");
-  const [copied, setCopied] = useState(false); // For the Copy button
+  const [copied, setCopied] = useState(false);
   
   const [showConfirm, setShowConfirm] = useState(false);
   const [agreedToTerms, setAgreedToTerms] = useState(false);
@@ -121,7 +121,6 @@ export default function InternshipPage() {
     setIsSearching(false);
   };
 
-  // NEW: Copy and Share Functions
   const copyToClipboard = () => {
     navigator.clipboard.writeText(sentAppId);
     setCopied(true);
@@ -154,7 +153,6 @@ export default function InternshipPage() {
           <div className="bg-white p-6 sm:p-8 rounded-sm shadow-2xl max-w-lg w-full border-t-4 border-corp-red animate-fade-in max-h-[90vh] overflow-y-auto">
             <h3 className="font-display text-2xl font-black text-gray-900 mb-4">Final Confirmation</h3>
             
-            {/* NEW: Massive Security Warning */}
             <div className="bg-yellow-50 text-yellow-800 text-xs sm:text-sm p-4 rounded-sm border border-yellow-200 mb-6 space-y-3 font-medium">
               <p className="text-red-600 font-black uppercase tracking-widest text-[10px]">⚠️ Security Alert</p>
               <p>Beware of fraudulent calls or messages. If anyone claims to be from Raja Deepu Sooriya Private Limited and asks for your private details or money, <b>do not share them.</b></p>
@@ -205,7 +203,6 @@ export default function InternshipPage() {
         {/* ─── TAB: STATUS TRACKER ─── */}
         {activeTab === "status" && (
            <div className="max-w-3xl mx-auto bg-white border border-gray-200 rounded-sm p-8 lg:p-12 shadow-xl animate-fade-in">
-             {/* ... (Status Tracker is unchanged from previous version) ... */}
              <h2 className="font-display text-3xl font-black text-gray-900 mb-2 text-center">Track Application</h2>
              <p className="text-gray-500 text-sm text-center mb-8">Enter your RDS Application ID to check your current recruitment status.</p>
              <form onSubmit={trackApplication} className="flex gap-4 mb-10">
@@ -266,7 +263,6 @@ export default function InternshipPage() {
                     <div className="text-[10px] font-bold text-gray-400 tracking-widest uppercase mb-1">Your Application ID</div>
                     <div className="font-mono text-3xl font-bold text-corp-red tracking-wider mb-4">{sentAppId}</div>
                     
-                    {/* NEW: COPY AND SHARE BUTTONS */}
                     <div className="flex justify-center gap-3">
                       <button onClick={copyToClipboard} className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 text-[10px] font-bold tracking-widest uppercase rounded transition-colors flex items-center gap-2">
                         {copied ? "✓ Copied" : "📋 Copy ID"}
@@ -310,7 +306,6 @@ export default function InternshipPage() {
                     <h4 className="text-[10px] font-black text-gray-400 tracking-widest uppercase border-b border-gray-200 pb-1">2. Academic Background</h4>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       
-                      {/* FIX: Tooltip moved to College, University is plain */}
                       <div className="sm:col-span-2">
                         <label className="block text-gray-900 text-[10px] font-bold tracking-widest uppercase mb-2">University Name *</label>
                         <input type="text" required list="universities-list" placeholder="Search your university..." value={form.university} onChange={e => setForm({ ...form, university: e.target.value })} className="w-full px-3 py-2.5 border border-gray-300 bg-white rounded-sm focus:border-corp-blue outline-none" />
@@ -339,7 +334,6 @@ export default function InternshipPage() {
                         <input type="text" required placeholder="e.g. Finance, IT, None" value={form.major} onChange={e => setForm({ ...form, major: e.target.value })} className="w-full px-3 py-2.5 border border-gray-300 bg-white rounded-sm focus:border-corp-blue outline-none" />
                       </div>
 
-                      {/* FIX: Year of Study moved BEFORE Batch */}
                       <div>
                         <label className="block text-gray-900 text-[10px] font-bold tracking-widest uppercase mb-2">Current Year of Study *</label>
                         <select value={form.year} onChange={e => setForm({ ...form, year: e.target.value })} className="w-full px-3 py-2.5 border border-gray-300 rounded-sm focus:border-corp-blue text-sm bg-white outline-none">
@@ -351,19 +345,34 @@ export default function InternshipPage() {
                     </div>
                   </div>
 
-                  {/* SECTION 3: PREFERENCES & ATTACHMENTS */}
+                  {/* SECTION 3: PREFERENCES */}
                   <div className="space-y-4 pt-4">
-                    <h4 className="text-[10px] font-black text-gray-400 tracking-widest uppercase border-b border-gray-200 pb-1">3. Preferences & Attachments</h4>
+                    <h4 className="text-[10px] font-black text-gray-400 tracking-widest uppercase border-b border-gray-200 pb-1">3. Preferences</h4>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div><label className="block text-gray-900 text-[10px] font-bold tracking-widest uppercase mb-2">Preferred Brand</label><select value={form.brand} onChange={e => setForm({ ...form, brand: e.target.value })} className="w-full px-3 py-2.5 border border-gray-300 rounded-sm bg-white"><option>MyTripRaja (Travel)</option><option>MarketerRaja (Marketing)</option></select></div>
                       <div><label className="block text-gray-900 text-[10px] font-bold tracking-widest uppercase mb-2">Duration</label><select value={form.duration} onChange={e => setForm({ ...form, duration: e.target.value })} className="w-full px-3 py-2.5 border border-gray-300 rounded-sm bg-white"><option>1 Month</option><option>3 Months</option><option>6 Months</option></select></div>
                       <div className="sm:col-span-2"><label className="block text-gray-900 text-[10px] font-bold tracking-widest uppercase mb-2">Why do you want this internship? (Optional)</label><textarea rows="3" value={form.whyInternship} onChange={e => setForm({ ...form, whyInternship: e.target.value })} className="w-full px-3 py-2.5 border border-gray-300 rounded-sm resize-none" /></div>
                     </div>
+                  </div>
+
+                  {/* SECTION 4: ATTACHMENTS & LINKS (RESTORED!) */}
+                  <div className="space-y-4 pt-4">
+                    <h4 className="text-[10px] font-black text-gray-400 tracking-widest uppercase border-b border-gray-200 pb-1">4. Attachments & Links</h4>
                     <ResumeUpload resumeFile={resumeFile} setResumeFile={setResumeFile} />
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
+                      <div>
+                        <label className="block text-gray-900 text-[10px] font-bold tracking-widest uppercase mb-2">LinkedIn Profile (Optional)</label>
+                        <input type="url" placeholder="https://linkedin.com/in/..." value={form.linkedin} onChange={e => setForm({ ...form, linkedin: e.target.value })} className="w-full px-3 py-2.5 border border-gray-300 bg-white rounded-sm focus:border-corp-blue outline-none" />
+                      </div>
+                      <div>
+                        <label className="block text-gray-900 text-[10px] font-bold tracking-widest uppercase mb-2">Portfolio / Project Link (Optional)</label>
+                        <input type="url" placeholder="https://..." value={form.portfolio} onChange={e => setForm({ ...form, portfolio: e.target.value })} className="w-full px-3 py-2.5 border border-gray-300 bg-white rounded-sm focus:border-corp-blue outline-none" />
+                      </div>
+                    </div>
                   </div>
 
                   <div className="pt-6">
-                    <button type="submit" disabled={isSubmitting} className={`w-full py-4 font-bold text-sm tracking-widest uppercase rounded-sm shadow-xl ${isSubmitting ? 'bg-gray-400 text-white cursor-wait' : 'bg-corp-red hover:bg-corp-red-dark text-white'}`}>
+                    <button type="submit" disabled={isSubmitting} className={`w-full py-4 font-bold text-sm tracking-widest uppercase rounded-sm shadow-xl transition-all duration-200 ${isSubmitting ? 'bg-gray-400 text-white cursor-wait' : 'bg-corp-red hover:bg-corp-red-dark text-white hover:-translate-y-1'}`}>
                       {isSubmitting ? 'Processing Application...' : 'Review & Submit'}
                     </button>
                     <p className="text-center text-[10px] text-gray-500 mt-4 font-bold tracking-widest uppercase">
