@@ -5,7 +5,7 @@ import { collection, getDocs, query, orderBy, doc, updateDoc } from "firebase/fi
 import JSZip from "jszip";
 import { saveAs } from "file-saver";
 
-const ADMIN_EMAIL = "rajadeepusooriya.pvt@gmail.com"; 
+const ADMIN_EMAIL = "deepusiva2017@gmail.com"; 
 
 export default function Admin() {
   const [user, setUser] = useState(null);
