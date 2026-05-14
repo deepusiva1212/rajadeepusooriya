@@ -55,16 +55,24 @@ export default function Admin() {
   };
 
   // ─── AUTHENTICATION & DATA FETCHING ─────────────────────────────────
-  useEffect(() => {
+ useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       if (currentUser) {
         const q = query(collection(db, "staff"), where("email", "==", currentUser.email), where("isActive", "==", true));
         const snap = await getDocs(q);
         if (!snap.empty) {
-          const staffProfile = snap.docs[0].data();
-          setStaffData({ id: snap.docs[0].id, ...staffProfile });
+          const profile = snap.docs[0].data();
+          
+          // 🚨 STRICT GATE: Block Standard Employees from the HR Portal
+          if (profile.role === "User") {
+            signOut(auth);
+            alert("SECURITY BREACH: Standard Employees cannot access the HR Enterprise Panel.");
+            return;
+          }
+
+          setStaffData({ id: snap.docs[0].id, ...profile });
           setUser(currentUser);
-          fetchAllData(staffProfile.role);
+          fetchAllData();
         } else {
           signOut(auth); setUser(null); setStaffData(null);
           alert("Access Denied: Your email is not registered as active HR Staff.");
