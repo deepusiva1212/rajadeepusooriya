@@ -10,10 +10,9 @@ export default function InternshipPage() {
   
   const [activeTab, setActiveTab] = useState("apply");
   const [form, setForm] = useState({ 
-    name: "", phone: "", altPhone: "", 
-    university: "", college: "", 
-    stream: "", major: "",
-    batch: "", year: "1st Year", 
+    name: "", gender: "Male", phone: "", altPhone: "", // NEW: Added Gender
+    university: "", college: "", stream: "", major: "",
+    batch: "2026 Batch", year: "1st Year", // NEW: Default Batch added
     brand: "MyTripRaja", duration: "1 Month",
     linkedin: "", portfolio: "", whyInternship: ""
   });
@@ -58,12 +57,31 @@ export default function InternshipPage() {
     } catch (error) { setErrorMsg("Verification failed. Please try again."); }
   };
 
-  const handleInitialSubmit = (e) => {
+  const handleInitialSubmit = async (e) => {
     e.preventDefault();
     setErrorMsg("");
+    
     const phoneRegex = /^[0-9]{10}$/;
     if (!phoneRegex.test(form.phone)) { setErrorMsg("Please enter a valid 10-digit primary mobile number."); return; }
     if (!resumeFile) { setErrorMsg("Please upload your resume."); return; }
+    
+    // NEW: RATE LIMITING SECURITY CHECK (Max 5 per batch)
+    setIsSubmitting(true);
+    try {
+      const q = query(collection(db, "applications"), where("email", "==", verifiedEmail), where("batch", "==", form.batch));
+      const querySnapshot = await getDocs(q);
+      if (querySnapshot.size >= 5) {
+        setErrorMsg(`Security Limit: This email has already submitted 5 applications for the ${form.batch}. No further submissions are allowed for this batch.`);
+        setIsSubmitting(false);
+        return;
+      }
+    } catch (err) {
+      setErrorMsg("Failed to verify submission limits. Check connection.");
+      setIsSubmitting(false);
+      return;
+    }
+    setIsSubmitting(false);
+    
     setShowConfirm(true);
   };
 
@@ -92,13 +110,26 @@ export default function InternshipPage() {
       const secureDownloadUrl = cloudData.secure_url;
 
       await addDoc(collection(db, "applications"), {
-        ...form, email: verifiedEmail, applicationId: uniqueId, resumeUrl: secureDownloadUrl, submittedAt: serverTimestamp(), status: "Pending"
+        ...form, 
+        email: verifiedEmail, 
+        applicationId: uniqueId, 
+        resumeUrl: secureDownloadUrl, 
+        submittedAt: serverTimestamp(), 
+        status: "Pending",
+        isDeleted: false // NEW: Prep for Soft Deletes
       });
 
       try {
         await emailjs.send(
           import.meta.env.VITE_EMAILJS_SERVICE_ID, import.meta.env.VITE_EMAILJS_TEMPLATE_ID, 
-          { to_name: form.name, to_email: verifiedEmail, application_id: uniqueId, brand: form.brand, role: "Internship Application" },
+          { 
+            to_name: form.name, 
+            to_email: verifiedEmail, 
+            application_id: uniqueId, 
+            brand: form.brand, 
+            role: "Internship Application",
+            resume_link: secureDownloadUrl // NEW: Sending the link back in the email
+          },
           import.meta.env.VITE_EMAILJS_PUBLIC_KEY 
         );
       } catch (emailError) { console.error("Email failed", emailError); }
@@ -113,9 +144,9 @@ export default function InternshipPage() {
     e.preventDefault();
     setTrackError(""); setTrackingStatus(null); setIsSearching(true);
     try {
-      const q = query(collection(db, "applications"), where("applicationId", "==", trackingId.toUpperCase().trim()));
+      const q = query(collection(db, "applications"), where("applicationId", "==", trackingId.toUpperCase().trim()), where("isDeleted", "==", false));
       const querySnapshot = await getDocs(q);
-      if (querySnapshot.empty) setTrackError("No application found with that ID. Please check and try again.");
+      if (querySnapshot.empty) setTrackError("No active application found with that ID. Please check and try again.");
       else setTrackingStatus(querySnapshot.docs[0].data().status || "Pending");
     } catch (error) { setTrackError("Error fetching status. Please try again later."); }
     setIsSearching(false);
@@ -129,60 +160,41 @@ export default function InternshipPage() {
 
   const shareAppId = async () => {
     if (navigator.share) {
-      try {
-        await navigator.share({
-          title: 'RDS Application ID',
-          text: `My Raja Deepu Sooriya Internship Application ID is: ${sentAppId}`,
-        });
-      } catch (err) { console.log('Share cancelled'); }
-    } else {
-      alert("Sharing is not supported on this browser. Please use the Copy button.");
-    }
+      try { await navigator.share({ title: 'RDS Application ID', text: `My Raja Deepu Sooriya Internship Application ID is: ${sentAppId}` }); } 
+      catch (err) { console.log('Share cancelled'); }
+    } else { alert("Sharing is not supported on this browser."); }
   };
 
   return (
     <div className="min-h-screen pt-32 pb-24 relative">
-      
       <datalist id="universities-list">
         {universitiesList.map(uni => <option key={uni} value={uni} />)}
       </datalist>
 
-      {/* FINAL CONFIRMATION POPUP WITH SECURITY WARNING */}
+      {/* CONFIRMATION POPUP */}
       {showConfirm && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 sm:p-6">
           <div className="bg-white p-6 sm:p-8 rounded-sm shadow-2xl max-w-lg w-full border-t-4 border-corp-red animate-fade-in max-h-[90vh] overflow-y-auto">
             <h3 className="font-display text-2xl font-black text-gray-900 mb-4">Final Confirmation</h3>
-            
             <div className="bg-yellow-50 text-yellow-800 text-xs sm:text-sm p-4 rounded-sm border border-yellow-200 mb-6 space-y-3 font-medium">
               <p className="text-red-600 font-black uppercase tracking-widest text-[10px]">⚠️ Security Alert</p>
               <p>Beware of fraudulent calls or messages. If anyone claims to be from Raja Deepu Sooriya Private Limited and asks for your private details or money, <b>do not share them.</b></p>
-              <p>We will <b>NEVER</b> ask you to pay any amount to personal accounts (GPay, PhonePe, etc.). All official transactions only happen through company-registered bank accounts.</p>
-              <p>We only ask for additional details if there is a mistake in your form, and we will <b>only</b> request this via our official email: <a href="mailto:contact@rajadeepusooriya.com" className="font-bold underline">contact@rajadeepusooriya.com</a> (or another @rajadeepusooriya.com domain). We will only discuss internship-related matters.</p>
+              <p>We will <b>NEVER</b> ask you to pay any amount to personal accounts. All official transactions only happen through company-registered bank accounts.</p>
+              <p>We will <b>only</b> contact you via <a href="mailto:contact@rajadeepusooriya.com" className="font-bold underline">contact@rajadeepusooriya.com</a>.</p>
             </div>
-
             <ul className="text-gray-600 text-xs font-body mb-6 space-y-2 list-disc pl-5">
               <li>Once submitted, your application details cannot be edited.</li>
-              <li>After submission, you will see your unique <b>Application Number</b> on the screen. Save this number for future reference.</li>
+              <li>After submission, you will see your unique <b>Application Number</b> on the screen. Save this number.</li>
             </ul>
-
             <div className="flex items-start gap-3 mb-8 bg-gray-50 p-4 border border-gray-200 rounded-sm">
-              <input 
-                type="checkbox" id="terms" checked={agreedToTerms} onChange={(e) => setAgreedToTerms(e.target.checked)}
-                className="mt-1 w-4 h-4 accent-corp-red cursor-pointer flex-shrink-0" 
-              />
+              <input type="checkbox" id="terms" checked={agreedToTerms} onChange={(e) => setAgreedToTerms(e.target.checked)} className="mt-1 w-4 h-4 accent-corp-red cursor-pointer flex-shrink-0" />
               <label htmlFor="terms" className="text-[11px] sm:text-xs text-gray-700 font-body leading-relaxed cursor-pointer">
-                I acknowledge the security guidelines above and agree to the <a href="/internship-terms" target="_blank" className="text-corp-blue hover:underline font-bold">Internship Terms & Conditions</a> and <a href="/internship-privacy" target="_blank" className="text-corp-blue hover:underline font-bold">Privacy Policy</a>.
+                I acknowledge the security guidelines and agree to the <a href="/internship-terms" target="_blank" className="text-corp-blue hover:underline font-bold">Internship Terms & Conditions</a> and <a href="/internship-privacy" target="_blank" className="text-corp-blue hover:underline font-bold">Privacy Policy</a>.
               </label>
             </div>
-
             <div className="flex gap-4">
               <button onClick={() => setShowConfirm(false)} className="flex-1 py-3 text-xs font-bold tracking-widest uppercase text-gray-600 border border-gray-300 rounded-sm hover:bg-gray-50 transition-colors">Go Back</button>
-              <button 
-                onClick={processFinalSubmission} disabled={!agreedToTerms}
-                className={`flex-1 py-3 text-xs font-bold tracking-widest uppercase rounded-sm transition-colors shadow-md ${agreedToTerms ? 'bg-corp-red hover:bg-corp-red-dark text-white' : 'bg-gray-300 text-gray-500 cursor-not-allowed'}`}
-              >
-                Agree & Submit
-              </button>
+              <button onClick={processFinalSubmission} disabled={!agreedToTerms} className={`flex-1 py-3 text-xs font-bold tracking-widest uppercase rounded-sm transition-colors shadow-md ${agreedToTerms ? 'bg-corp-red hover:bg-corp-red-dark text-white' : 'bg-gray-300 text-gray-500 cursor-not-allowed'}`}>Agree & Submit</button>
             </div>
           </div>
         </div>
@@ -200,7 +212,6 @@ export default function InternshipPage() {
           </div>
         </div>
 
-        {/* ─── TAB: STATUS TRACKER ─── */}
         {activeTab === "status" && (
            <div className="max-w-3xl mx-auto bg-white border border-gray-200 rounded-sm p-8 lg:p-12 shadow-xl animate-fade-in">
              <h2 className="font-display text-3xl font-black text-gray-900 mb-2 text-center">Track Application</h2>
@@ -237,7 +248,6 @@ export default function InternshipPage() {
            </div>
         )}
 
-        {/* ─── TAB: APPLICATION FORM ─── */}
         {activeTab === "apply" && (
           <div className="grid lg:grid-cols-2 gap-16 items-start animate-fade-in">
             {/* Tracks Sidebar */}
@@ -253,23 +263,15 @@ export default function InternshipPage() {
             <div className="bg-[#f4f7fb] border border-gray-200 rounded-sm p-6 sm:p-8 shadow-xl relative">
               {sentAppId ? (
                 <div className="flex flex-col items-center justify-center h-full min-h-[400px] text-center">
-                  <div className="w-16 h-16 bg-green-100 text-green-600 rounded-full flex items-center justify-center mb-6">
-                    <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7"></path></svg>
-                  </div>
+                  <div className="w-16 h-16 bg-green-100 text-green-600 rounded-full flex items-center justify-center mb-6"><svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7"></path></svg></div>
                   <div className="text-gray-900 font-black text-2xl mb-2">Application Received</div>
                   <p className="text-sm text-gray-500 mb-6">Save this ID to check your status later.</p>
-                  
                   <div className="bg-white border border-gray-200 w-full p-6 rounded-sm mb-6 shadow-sm">
                     <div className="text-[10px] font-bold text-gray-400 tracking-widest uppercase mb-1">Your Application ID</div>
                     <div className="font-mono text-3xl font-bold text-corp-red tracking-wider mb-4">{sentAppId}</div>
-                    
                     <div className="flex justify-center gap-3">
-                      <button onClick={copyToClipboard} className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 text-[10px] font-bold tracking-widest uppercase rounded transition-colors flex items-center gap-2">
-                        {copied ? "✓ Copied" : "📋 Copy ID"}
-                      </button>
-                      <button onClick={shareAppId} className="px-4 py-2 bg-corp-blue hover:bg-corp-blue-mid text-white text-[10px] font-bold tracking-widest uppercase rounded transition-colors flex items-center gap-2">
-                        📤 Share
-                      </button>
+                      <button onClick={copyToClipboard} className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 text-[10px] font-bold tracking-widest uppercase rounded transition-colors flex items-center gap-2">{copied ? "✓ Copied" : "📋 Copy ID"}</button>
+                      <button onClick={shareAppId} className="px-4 py-2 bg-corp-blue hover:bg-corp-blue-mid text-white text-[10px] font-bold tracking-widest uppercase rounded transition-colors flex items-center gap-2">📤 Share</button>
                     </div>
                   </div>
                   <button onClick={() => {setSentAppId(null); setActiveTab("status");}} className="text-xs text-corp-blue font-bold tracking-widest uppercase hover:underline mt-4">Track Application Status →</button>
@@ -278,9 +280,7 @@ export default function InternshipPage() {
                 <div className="flex flex-col items-center justify-center h-full min-h-[400px] text-center">
                   <div className="text-gray-900 font-black text-xl mb-4 font-display">Secure Application</div>
                   <p className="text-gray-500 text-sm font-body mb-8">To prevent spam, please verify your email address to access the internship application form.</p>
-                  <button onClick={handleGoogleVerify} className="w-full flex items-center justify-center gap-3 py-4 border border-gray-300 bg-white hover:bg-gray-50 text-gray-700 font-bold text-sm tracking-widest uppercase transition-colors rounded-sm shadow-sm">
-                    Verify with Google
-                  </button>
+                  <button onClick={handleGoogleVerify} className="w-full flex items-center justify-center gap-3 py-4 border border-gray-300 bg-white hover:bg-gray-50 text-gray-700 font-bold text-sm tracking-widest uppercase transition-colors rounded-sm shadow-sm">Verify with Google</button>
                 </div>
               ) : (
                 <form onSubmit={handleInitialSubmit} className="space-y-6">
@@ -294,8 +294,18 @@ export default function InternshipPage() {
                   <div className="space-y-4">
                     <h4 className="text-[10px] font-black text-gray-400 tracking-widest uppercase border-b border-gray-200 pb-1">1. Contact Details</h4>
                     <div><label className="block text-gray-900 text-[10px] font-bold tracking-widest uppercase mb-2">Verified Email</label><input type="text" disabled value={verifiedEmail} className="w-full px-3 py-2.5 border border-gray-200 bg-gray-100 text-gray-500 rounded-sm text-sm" /></div>
-                    <div><label className="block text-gray-900 text-[10px] font-bold tracking-widest uppercase mb-2">Full Name *</label><input type="text" required value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} className="w-full px-3 py-2.5 border border-gray-300 bg-white rounded-sm focus:border-corp-blue outline-none" /></div>
+                    
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div><label className="block text-gray-900 text-[10px] font-bold tracking-widest uppercase mb-2">Full Name *</label><input type="text" required value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} className="w-full px-3 py-2.5 border border-gray-300 bg-white rounded-sm focus:border-corp-blue outline-none" /></div>
+                      
+                      {/* NEW: GENDER SELECTION */}
+                      <div>
+                        <label className="block text-gray-900 text-[10px] font-bold tracking-widest uppercase mb-2">Gender *</label>
+                        <select value={form.gender} onChange={e => setForm({ ...form, gender: e.target.value })} className="w-full px-3 py-2.5 border border-gray-300 rounded-sm focus:border-corp-blue text-sm bg-white outline-none">
+                          <option>Male</option><option>Female</option><option>Other</option><option>Prefer not to say</option>
+                        </select>
+                      </div>
+
                       <div><label className="block text-gray-900 text-[10px] font-bold tracking-widest uppercase mb-2">Primary Phone *</label><input type="tel" required maxLength="10" value={form.phone} onChange={e => setForm({ ...form, phone: e.target.value.replace(/\D/g,'') })} className="w-full px-3 py-2.5 border border-gray-300 bg-white rounded-sm focus:border-corp-blue outline-none" /></div>
                       <div><label className="block text-gray-900 text-[10px] font-bold tracking-widest uppercase mb-2">Alt Phone (Optional)</label><input type="tel" maxLength="10" value={form.altPhone} onChange={e => setForm({ ...form, altPhone: e.target.value.replace(/\D/g,'') })} className="w-full px-3 py-2.5 border border-gray-300 bg-white rounded-sm focus:border-corp-blue outline-none" /></div>
                     </div>
@@ -304,8 +314,18 @@ export default function InternshipPage() {
                   {/* SECTION 2: ACADEMICS */}
                   <div className="space-y-4 pt-4">
                     <h4 className="text-[10px] font-black text-gray-400 tracking-widest uppercase border-b border-gray-200 pb-1">2. Academic Background</h4>
+                    
+                    <div className="mb-4">
+                        <label className="block text-gray-900 text-[10px] font-bold tracking-widest uppercase mb-2">Batch / Admission Year *</label>
+                        <input type="text" required list="batch-list" placeholder="e.g. 2026 Batch, Summer 2027" value={form.batch} onChange={e => setForm({ ...form, batch: e.target.value })} className="w-full px-3 py-2.5 border border-gray-300 bg-white rounded-sm focus:border-corp-blue outline-none" />
+                        <datalist id="batch-list">
+                          <option value="2025 Batch" />
+                          <option value="2026 Batch" />
+                          <option value="2027 Batch" />
+                        </datalist>
+                    </div>
+
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      
                       <div className="sm:col-span-2">
                         <label className="block text-gray-900 text-[10px] font-bold tracking-widest uppercase mb-2">University Name *</label>
                         <input type="text" required list="universities-list" placeholder="Search your university..." value={form.university} onChange={e => setForm({ ...form, university: e.target.value })} className="w-full px-3 py-2.5 border border-gray-300 bg-white rounded-sm focus:border-corp-blue outline-none" />
@@ -340,8 +360,6 @@ export default function InternshipPage() {
                           <option>1st Year</option><option>2nd Year</option><option>3rd Year</option><option>4th Year</option><option>5th Year</option><option>Final Year</option><option>Graduated</option>
                         </select>
                       </div>
-
-                      <div><label className="block text-gray-900 text-[10px] font-bold tracking-widest uppercase mb-2">Batch / Year of Passing *</label><input type="text" required placeholder="e.g. 2024-2026" value={form.batch} onChange={e => setForm({ ...form, batch: e.target.value })} className="w-full px-3 py-2.5 border border-gray-300 bg-white rounded-sm focus:border-corp-blue outline-none" /></div>
                     </div>
                   </div>
 
@@ -355,19 +373,13 @@ export default function InternshipPage() {
                     </div>
                   </div>
 
-                  {/* SECTION 4: ATTACHMENTS & LINKS (RESTORED!) */}
+                  {/* SECTION 4: ATTACHMENTS & LINKS */}
                   <div className="space-y-4 pt-4">
                     <h4 className="text-[10px] font-black text-gray-400 tracking-widest uppercase border-b border-gray-200 pb-1">4. Attachments & Links</h4>
                     <ResumeUpload resumeFile={resumeFile} setResumeFile={setResumeFile} />
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
-                      <div>
-                        <label className="block text-gray-900 text-[10px] font-bold tracking-widest uppercase mb-2">LinkedIn Profile (Optional)</label>
-                        <input type="url" placeholder="https://linkedin.com/in/..." value={form.linkedin} onChange={e => setForm({ ...form, linkedin: e.target.value })} className="w-full px-3 py-2.5 border border-gray-300 bg-white rounded-sm focus:border-corp-blue outline-none" />
-                      </div>
-                      <div>
-                        <label className="block text-gray-900 text-[10px] font-bold tracking-widest uppercase mb-2">Portfolio / Project Link (Optional)</label>
-                        <input type="url" placeholder="https://..." value={form.portfolio} onChange={e => setForm({ ...form, portfolio: e.target.value })} className="w-full px-3 py-2.5 border border-gray-300 bg-white rounded-sm focus:border-corp-blue outline-none" />
-                      </div>
+                      <div><label className="block text-gray-900 text-[10px] font-bold tracking-widest uppercase mb-2">LinkedIn Profile (Optional)</label><input type="url" placeholder="https://linkedin.com/in/..." value={form.linkedin} onChange={e => setForm({ ...form, linkedin: e.target.value })} className="w-full px-3 py-2.5 border border-gray-300 bg-white rounded-sm focus:border-corp-blue outline-none" /></div>
+                      <div><label className="block text-gray-900 text-[10px] font-bold tracking-widest uppercase mb-2">Portfolio Link (Optional)</label><input type="url" placeholder="https://..." value={form.portfolio} onChange={e => setForm({ ...form, portfolio: e.target.value })} className="w-full px-3 py-2.5 border border-gray-300 bg-white rounded-sm focus:border-corp-blue outline-none" /></div>
                     </div>
                   </div>
 
@@ -375,9 +387,6 @@ export default function InternshipPage() {
                     <button type="submit" disabled={isSubmitting} className={`w-full py-4 font-bold text-sm tracking-widest uppercase rounded-sm shadow-xl transition-all duration-200 ${isSubmitting ? 'bg-gray-400 text-white cursor-wait' : 'bg-corp-red hover:bg-corp-red-dark text-white hover:-translate-y-1'}`}>
                       {isSubmitting ? 'Processing Application...' : 'Review & Submit'}
                     </button>
-                    <p className="text-center text-[10px] text-gray-500 mt-4 font-bold tracking-widest uppercase">
-                      Facing issues? Contact <a href="mailto:contact@rajadeepusooriya.com" className="text-corp-blue hover:underline">contact@rajadeepusooriya.com</a>
-                    </p>
                   </div>
                 </form>
               )}
