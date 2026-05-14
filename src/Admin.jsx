@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { auth, provider, db } from "./firebase";
 import { signInWithPopup, signOut, onAuthStateChanged } from "firebase/auth";
-import { collection, getDocs, query, orderBy, doc, updateDoc, deleteDoc, where, addDoc } from "firebase/firestore";
+import { collection, getDocs, query, orderBy, doc, updateDoc, deleteDoc, where } from "firebase/firestore";
 import JSZip from "jszip";
 import { saveAs } from "file-saver";
 
@@ -14,7 +14,6 @@ export default function Admin() {
   // ─── DATA STATE ─────────────────────────────────────────────────────
   const [applications, setApplications] = useState([]);
   const [enquiries, setEnquiries] = useState([]);
-  const [staffList, setStaffList] = useState([]);
   const [loadingData, setLoadingData] = useState(false);
   
   // ─── UI STATE ───────────────────────────────────────────────────────
@@ -25,8 +24,6 @@ export default function Admin() {
   const [showDuplicatesOnly, setShowDuplicatesOnly] = useState(false); 
   const [selectedApps, setSelectedApps] = useState([]);
   const [toast, setToast] = useState({ show: false, message: "", type: "success" });
-
-  const [newStaff, setNewStaff] = useState({ name: "", email: "", role: "User", employeeId: "" });
 
   // ─── EMAIL TEMPLATES ────────────────────────────────────────────────
   const defaultTemplates = {
@@ -40,14 +37,15 @@ export default function Admin() {
 
   const [templates, setTemplates] = useState(() => {
     const saved = localStorage.getItem('rds_email_templates');
-    if (saved) {
-      const parsed = JSON.parse(saved);
-      return { ...defaultTemplates, ...parsed }; 
+    if (saved) { 
+      return { ...defaultTemplates, ...JSON.parse(saved) }; 
     }
     return defaultTemplates;
   });
 
-  useEffect(() => { localStorage.setItem('rds_email_templates', JSON.stringify(templates)); }, [templates]);
+  useEffect(() => { 
+    localStorage.setItem('rds_email_templates', JSON.stringify(templates)); 
+  }, [templates]);
 
   const showToast = (message, type = "success") => {
     setToast({ show: true, message, type });
@@ -55,11 +53,12 @@ export default function Admin() {
   };
 
   // ─── AUTHENTICATION & DATA FETCHING ─────────────────────────────────
- useEffect(() => {
+  useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       if (currentUser) {
         const q = query(collection(db, "staff"), where("email", "==", currentUser.email), where("isActive", "==", true));
         const snap = await getDocs(q);
+        
         if (!snap.empty) {
           const profile = snap.docs[0].data();
           
@@ -74,85 +73,116 @@ export default function Admin() {
           setUser(currentUser);
           fetchAllData();
         } else {
-          signOut(auth); setUser(null); setStaffData(null);
+          signOut(auth); 
+          setUser(null); 
+          setStaffData(null);
           alert("Access Denied: Your email is not registered as active HR Staff.");
         }
-      } else { setUser(null); setStaffData(null); }
+      } else { 
+        setUser(null); 
+        setStaffData(null); 
+      }
       setLoadingAuth(false);
     });
     return () => unsubscribe();
   }, []);
 
-  const fetchAllData = async (role) => {
+  const fetchAllData = async () => {
     setLoadingData(true);
     try {
       const qApps = query(collection(db, "applications"), orderBy("submittedAt", "desc"));
       const snapApps = await getDocs(qApps);
-      setApplications(snapApps.docs.map(doc => ({ id: doc.id, ...doc.data(), dateStr: doc.data().submittedAt ? doc.data().submittedAt.toDate().toLocaleString('en-IN', { dateStyle: 'short', timeStyle: 'short' }) : "Just now" })));
+      setApplications(snapApps.docs.map(doc => ({ 
+        id: doc.id, 
+        ...doc.data(), 
+        dateStr: doc.data().submittedAt ? doc.data().submittedAt.toDate().toLocaleString('en-IN', { dateStyle: 'short', timeStyle: 'short' }) : "Just now" 
+      })));
 
       const qEnqs = query(collection(db, "enquiries"), orderBy("submittedAt", "desc"));
       const snapEnqs = await getDocs(qEnqs);
-      setEnquiries(snapEnqs.docs.map(doc => ({ id: doc.id, ...doc.data(), dateStr: doc.data().submittedAt ? doc.data().submittedAt.toDate().toLocaleString('en-IN', { dateStyle: 'short', timeStyle: 'short' }) : "Just now" })));
-
-      if (role === "Super Admin") {
-        const snapStaff = await getDocs(collection(db, "staff"));
-        setStaffList(snapStaff.docs.map(d => ({ id: d.id, ...d.data() })));
-      }
-    } catch (e) { showToast("Failed to sync data", "error"); }
+      setEnquiries(snapEnqs.docs.map(doc => ({ 
+        id: doc.id, 
+        ...doc.data(), 
+        dateStr: doc.data().submittedAt ? doc.data().submittedAt.toDate().toLocaleString('en-IN', { dateStyle: 'short', timeStyle: 'short' }) : "Just now" 
+      })));
+    } catch (e) { 
+      showToast("Failed to sync data", "error"); 
+    }
     setLoadingData(false);
   };
 
   const updateApplicationStatus = async (app, newStatus) => {
-    if (staffData.role === "User") { showToast("Access Denied: Users cannot change status.", "error"); return; }
     try {
-      const historyEntry = { status: newStatus, updatedBy: staffData.name, email: staffData.email, date: new Date().toLocaleString('en-IN') };
+      const historyEntry = { 
+        status: newStatus, 
+        updatedBy: staffData.name, 
+        email: staffData.email, 
+        date: new Date().toLocaleString('en-IN') 
+      };
       const newHistory = [...(app.history || []), historyEntry];
-      await updateDoc(doc(db, "applications", app.id), { status: newStatus, history: newHistory });
+      
+      await updateDoc(doc(db, "applications", app.id), { 
+        status: newStatus, 
+        history: newHistory 
+      });
+      
       setApplications(applications.map(a => a.id === app.id ? { ...a, status: newStatus, history: newHistory } : a));
       showToast(`Status updated to ${newStatus}`);
-    } catch (e) { showToast("Failed to update status.", "error"); }
+    } catch (e) { 
+      showToast("Failed to update status.", "error"); 
+    }
   };
 
   const handleSoftDelete = async () => {
-    if (staffData.role === "User") { showToast("Access Denied.", "error"); return; }
     const password = window.prompt("SECURITY CHECK: Type 'DELETE' to confirm:");
-    if (password !== "DELETE") { showToast("Deletion Cancelled", "error"); return; }
+    if (password !== "DELETE") { 
+      showToast("Deletion Cancelled", "error"); 
+      return; 
+    }
     const deleteNote = window.prompt("Optional reason for deleting:") || "No reason provided";
     
     showToast("Moving to Trash...");
     try {
       const deletionTime = new Date().toLocaleString('en-IN');
       for (const appId of selectedApps) {
-        await updateDoc(doc(db, "applications", appId), { isDeleted: true, deletedAt: deletionTime, deletedBy: staffData.name, deleteNote: deleteNote });
+        await updateDoc(doc(db, "applications", appId), { 
+          isDeleted: true, 
+          deletedAt: deletionTime, 
+          deletedBy: staffData.name, 
+          deleteNote: deleteNote 
+        });
       }
       setApplications(applications.map(app => selectedApps.includes(app.id) ? { ...app, isDeleted: true, deletedAt: deletionTime, deletedBy: staffData.name, deleteNote: deleteNote } : app));
       setSelectedApps([]);
       showToast("Moved to Trash.");
-    } catch (error) { showToast("Failed to delete.", "error"); }
+    } catch (error) { 
+      showToast("Failed to delete.", "error"); 
+    }
   };
 
   const handlePermanentDelete = async (appId) => {
-    if (staffData.role !== "Super Admin") { showToast("Super Admins only.", "error"); return; }
+    if (staffData.role !== "Super Admin") { 
+      showToast("Super Admins only.", "error"); 
+      return; 
+    }
     if (!window.confirm("Permanently erase data?")) return;
-    try { await deleteDoc(doc(db, "applications", appId)); setApplications(applications.filter(a => a.id !== appId)); showToast("Permanently deleted."); } 
-    catch (error) { showToast("Failed to delete.", "error"); }
+    try { 
+      await deleteDoc(doc(db, "applications", appId)); 
+      setApplications(applications.filter(a => a.id !== appId)); 
+      showToast("Permanently deleted."); 
+    } catch (error) { 
+      showToast("Failed to delete.", "error"); 
+    }
   };
 
   const handleRestore = async (appId) => {
-    try { await updateDoc(doc(db, "applications", appId), { isDeleted: false }); setApplications(applications.map(a => a.id === appId ? { ...a, isDeleted: false } : a)); showToast("Restored!"); } 
-    catch (error) { showToast("Failed to restore.", "error"); }
-  };
-
-  const addStaffMember = async (e) => {
-    e.preventDefault();
-    try { const newDoc = await addDoc(collection(db, "staff"), { ...newStaff, isActive: true }); setStaffList([...staffList, { id: newDoc.id, ...newStaff, isActive: true }]); setNewStaff({ name: "", email: "", role: "User", employeeId: "" }); showToast("Staff added!"); } 
-    catch (error) { showToast("Failed to add staff.", "error"); }
-  };
-
-  const removeStaffMember = async (staffId) => {
-    if (!window.confirm("Revoke access?")) return;
-    try { await deleteDoc(doc(db, "staff", staffId)); setStaffList(staffList.filter(s => s.id !== staffId)); showToast("Access revoked."); } 
-    catch (error) { showToast("Failed to remove staff.", "error"); }
+    try { 
+      await updateDoc(doc(db, "applications", appId), { isDeleted: false }); 
+      setApplications(applications.map(a => a.id === appId ? { ...a, isDeleted: false } : a)); 
+      showToast("Restored!"); 
+    } catch (error) { 
+      showToast("Failed to restore.", "error"); 
+    }
   };
 
   // ─── EMAILS WITH ALL TAGS ───────────────────────────────────────────
@@ -187,7 +217,7 @@ export default function Admin() {
     window.location.href = `mailto:?bcc=${selectedEmails}&subject=${subject}&body=${body}`;
   };
 
-  // ─── RESTORED MISSING FUNCTIONS: EXPORT, ZIP, AND DUPLICATES ────────
+  // ─── EXPORT, ZIP, AND DUPLICATES ────────
   const exportToCSV = () => {
     const headers = ["App ID,Date,Batch,Name,Gender,Email,Phone,University,College,Stream,Major,Year,Brand,Duration,Status"];
     const rows = filteredApps.map(a => 
@@ -197,21 +227,32 @@ export default function Admin() {
     const link = document.createElement("a");
     link.href = encodeURI(csvContent);
     link.download = `RDS_Applications.csv`;
-    document.body.appendChild(link); link.click(); document.body.removeChild(link);
+    document.body.appendChild(link); 
+    link.click(); 
+    document.body.removeChild(link);
     showToast("Excel Report Downloaded");
   };
 
   const downloadSelectedResumes = async () => {
     showToast("Zipping files... Please wait.");
-    const zip = new JSZip(); const folder = zip.folder("RDS_Resumes");
+    const zip = new JSZip(); 
+    const folder = zip.folder("RDS_Resumes");
     const appsToDownload = applications.filter(app => selectedApps.includes(app.id) && app.resumeUrl);
+    
     for (const app of appsToDownload) {
       try {
-        const response = await fetch(app.resumeUrl); const blob = await response.blob();
+        const response = await fetch(app.resumeUrl); 
+        const blob = await response.blob();
         folder.file(`${app.name.replace(/[^a-z0-9]/gi, '_')}_${app.applicationId}.pdf`, blob);
-      } catch (error) { console.error("Could not download", app.name); }
+      } catch (error) { 
+        console.error("Could not download", app.name); 
+      }
     }
-    zip.generateAsync({ type: "blob" }).then(function(content) { saveAs(content, `RDS_Resumes.zip`); showToast("Download Complete!"); });
+    
+    zip.generateAsync({ type: "blob" }).then(function(content) { 
+      saveAs(content, `RDS_Resumes.zip`); 
+      showToast("Download Complete!"); 
+    });
   };
 
   const isDuplicate = (val, field) => { 
@@ -226,17 +267,27 @@ export default function Admin() {
 
   let filteredApps = activeApplications.filter(app => {
     const searchStr = search.toLowerCase();
-    const matchesSearch = (app.name?.toLowerCase().includes(searchStr)) || (app.applicationId?.toLowerCase().includes(searchStr)) || (app.email?.toLowerCase().includes(searchStr)) || (app.phone?.includes(searchStr));
+    const matchesSearch = (app.name?.toLowerCase().includes(searchStr)) || 
+                          (app.applicationId?.toLowerCase().includes(searchStr)) || 
+                          (app.email?.toLowerCase().includes(searchStr)) || 
+                          (app.phone?.includes(searchStr));
     const matchesBrand = filterBrand === "All Brands" || app.brand === filterBrand;
     const matchesBatch = filterBatch === "All Batches" || app.batch === filterBatch;
     const matchesDup = showDuplicatesOnly ? (isDuplicate(app.phone, 'phone') || isDuplicate(app.email, 'email')) : true;
     return matchesSearch && matchesBrand && matchesBatch && matchesDup;
   });
 
-  if (showDuplicatesOnly) { filteredApps.sort((a, b) => (a.email || "").localeCompare(b.email || "")); }
+  if (showDuplicatesOnly) { 
+    filteredApps.sort((a, b) => (a.email || "").localeCompare(b.email || "")); 
+  }
 
-  const handleSelectAll = (e) => { e.target.checked ? setSelectedApps(filteredApps.map(a => a.id)) : setSelectedApps([]); };
-  const handleSelectOne = (id) => { selectedApps.includes(id) ? setSelectedApps(selectedApps.filter(appId => appId !== id)) : setSelectedApps([...selectedApps, id]); };
+  const handleSelectAll = (e) => { 
+    e.target.checked ? setSelectedApps(filteredApps.map(a => a.id)) : setSelectedApps([]); 
+  };
+  
+  const handleSelectOne = (id) => { 
+    selectedApps.includes(id) ? setSelectedApps(selectedApps.filter(appId => appId !== id)) : setSelectedApps([...selectedApps, id]); 
+  };
 
   // ─── AUTH SCREEN ────────────────────────────────────────────────────
   if (loadingAuth) return <div className="min-h-screen bg-gray-50 flex items-center justify-center text-xs font-bold uppercase tracking-widest">Verifying Corporate Credentials...</div>;
@@ -281,14 +332,15 @@ export default function Admin() {
           
           <div className="text-[10px] font-black text-gray-500 tracking-widest uppercase mt-6 mb-2">System Admin</div>
           <button onClick={() => setActiveTab("trash")} className={`text-left px-4 py-3 rounded-sm text-sm font-bold transition-colors flex items-center gap-3 ${activeTab === "trash" ? "bg-red-500/20 text-red-400" : "text-gray-400 hover:text-red-400 hover:bg-white/5"}`}>🗑️ Trash Bin ({deletedApplications.length})</button>
-          {staffData.role === "Super Admin" && (
-            <button onClick={() => setActiveTab("team")} className={`text-left px-4 py-3 rounded-sm text-sm font-bold transition-colors flex items-center gap-3 ${activeTab === "team" ? "bg-blue-500/20 text-blue-400" : "text-gray-400 hover:text-blue-400 hover:bg-white/5"}`}>👥 Team Access</button>
-          )}
         </div>
 
         <div className="p-6 border-t border-white/10 bg-white/5">
           <div className="flex items-center gap-3 mb-4">
-            <div className="w-8 h-8 rounded-full bg-gray-700 flex items-center justify-center font-bold text-xs uppercase">{staffData.name.charAt(0)}</div>
+            {staffData.photoUrl ? (
+              <img src={staffData.photoUrl} alt="Profile" className="w-8 h-8 rounded-full object-cover border border-white/20" />
+            ) : (
+              <div className="w-8 h-8 rounded-full bg-gray-700 flex items-center justify-center font-bold text-xs uppercase">{staffData.name.charAt(0)}</div>
+            )}
             <div className="overflow-hidden">
               <div className="text-xs font-bold text-white truncate">{staffData.name}</div>
               <div className="text-[10px] text-corp-gold font-bold uppercase tracking-widest">{staffData.role}</div>
@@ -303,7 +355,7 @@ export default function Admin() {
         <header className="bg-white border-b border-gray-200 px-8 py-4 flex justify-between items-center sticky top-0 z-10 shadow-sm">
           <h2 className="font-display text-2xl font-black text-gray-900 capitalize">{activeTab.replace('-', ' ')}</h2>
           <div className="flex items-center gap-4">
-            <button onClick={() => fetchAllData(staffData.role)} className="text-[10px] font-bold text-gray-500 uppercase tracking-widest hover:text-corp-blue flex items-center gap-2">🔄 {loadingData ? "Syncing..." : "Refresh"}</button>
+            <button onClick={fetchAllData} className="text-[10px] font-bold text-gray-500 uppercase tracking-widest hover:text-corp-blue flex items-center gap-2">🔄 {loadingData ? "Syncing..." : "Refresh"}</button>
           </div>
         </header>
 
@@ -342,7 +394,6 @@ export default function Admin() {
           {/* ─── TAB: APPLICATIONS ─── */}
           {activeTab === "applications" && (
             <div className="animate-fade-in">
-              {/* RESTORED FILTERS AND BUTTONS */}
               <div className="bg-white p-4 rounded-sm shadow-sm border border-gray-200 mb-6 flex flex-wrap gap-4 items-center justify-between">
                 <div className="flex gap-4 flex-wrap flex-1">
                   <input type="text" placeholder="Search ID, Name, Email..." value={search} onChange={e => setSearch(e.target.value)} className="flex-1 min-w-[200px] px-4 py-2 border border-gray-200 rounded-sm text-sm outline-none focus:border-corp-blue" />
@@ -360,7 +411,6 @@ export default function Admin() {
                 </div>
               </div>
 
-              {/* BULK ACTION BAR */}
               {selectedApps.length > 0 && (
                 <div className="bg-corp-blue text-white p-4 mb-6 rounded-sm shadow-md flex flex-wrap items-center justify-between animate-fade-in gap-4">
                   <div className="text-sm font-bold">{selectedApps.length} Selected</div>
@@ -373,7 +423,6 @@ export default function Admin() {
                 </div>
               )}
 
-              {/* TABLE */}
               <div className="bg-white border border-gray-200 rounded-sm shadow-sm overflow-x-auto">
                 <table className="w-full text-left border-collapse">
                   <thead>
@@ -388,7 +437,9 @@ export default function Admin() {
                   <tbody className="divide-y divide-gray-100">
                     {filteredApps.map(app => (
                       <tr key={app.id} className={`hover:bg-gray-50 ${selectedApps.includes(app.id) ? 'bg-blue-50/30' : ''}`}>
-                        <td className="px-6 py-4"><input type="checkbox" checked={selectedApps.includes(app.id)} onChange={() => handleSelectOne(app.id)} className="w-4 h-4 accent-corp-red cursor-pointer" /></td>
+                        <td className="px-6 py-4">
+                          <input type="checkbox" checked={selectedApps.includes(app.id)} onChange={() => handleSelectOne(app.id)} className="w-4 h-4 accent-corp-red cursor-pointer" />
+                        </td>
                         <td className="px-4 py-4 whitespace-nowrap">
                           <div className="text-xs font-bold text-corp-red mb-1 font-mono">{app.applicationId}</div>
                           <div className="text-[10px] text-gray-500 font-bold bg-gray-100 inline-block px-2 py-0.5 rounded">{app.batch || "No Batch"}</div>
@@ -398,17 +449,20 @@ export default function Admin() {
                           <div className="font-bold text-gray-900 mb-2 flex items-center justify-between gap-4">
                             {app.name}
                             <div className="flex gap-2">
-                              <button onClick={() => sendIndividualEmail(app, true)} className="text-[10px] bg-green-50 text-green-600 px-2 py-1 rounded border border-green-200 hover:bg-green-100 font-bold" title="Send Welcome Email">Welcome</button>
-                              <button onClick={() => sendIndividualEmail(app, false)} className="text-[10px] bg-blue-50 text-blue-600 px-2 py-1 rounded border border-blue-200 hover:bg-blue-100 font-bold" title="Send Status Email">Update</button>
+                              <button onClick={() => sendIndividualEmail(app, true)} className="text-[10px] bg-green-50 text-green-600 px-2 py-1 rounded border border-green-200 hover:bg-green-100 font-bold">Welcome</button>
+                              <button onClick={() => sendIndividualEmail(app, false)} className="text-[10px] bg-blue-50 text-blue-600 px-2 py-1 rounded border border-blue-200 hover:bg-blue-100 font-bold">Update</button>
                             </div>
                           </div>
                           <select 
-                            disabled={staffData.role === "User"}
                             value={app.status || "Pending"} 
                             onChange={(e) => updateApplicationStatus(app, e.target.value)}
-                            className={`text-[9px] font-black tracking-widest uppercase rounded-sm px-2 py-1 border outline-none cursor-pointer ${staffData.role === "User" ? "opacity-50" : ""} ${(!app.status || app.status === 'Pending') ? 'bg-yellow-50 text-yellow-700 border-yellow-200' : ''} ${app.status === 'Interviewing' ? 'bg-purple-50 text-purple-700 border-purple-200' : ''} ${app.status === 'Selected' ? 'bg-green-50 text-green-700 border-green-200' : ''} ${app.status === 'Rejected' ? 'bg-gray-100 text-gray-500 border-gray-200' : ''}`}
+                            className={`text-[9px] font-black tracking-widest uppercase rounded-sm px-2 py-1 border outline-none cursor-pointer ${(!app.status || app.status === 'Pending') ? 'bg-yellow-50 text-yellow-700 border-yellow-200' : ''} ${app.status === 'Interviewing' ? 'bg-purple-50 text-purple-700 border-purple-200' : ''} ${app.status === 'Selected' ? 'bg-green-50 text-green-700 border-green-200' : ''} ${app.status === 'Rejected' ? 'bg-gray-100 text-gray-500 border-gray-200' : ''}`}
                           >
-                            <option value="Pending">Pending</option><option value="Reviewed">Reviewed</option><option value="Interviewing">Interviewing</option><option value="Selected">Selected</option><option value="Rejected">Rejected</option>
+                            <option value="Pending">Pending</option>
+                            <option value="Reviewed">Reviewed</option>
+                            <option value="Interviewing">Interviewing</option>
+                            <option value="Selected">Selected</option>
+                            <option value="Rejected">Rejected</option>
                           </select>
                         </td>
                         <td className="px-6 py-4">
@@ -420,8 +474,12 @@ export default function Admin() {
                            <div className="flex flex-col gap-2">
                               <div className={`text-[10px] ${isDuplicate(app.phone, 'phone') ? 'text-orange-600 font-bold' : 'text-gray-600'}`}>P: {app.phone} {isDuplicate(app.phone, 'phone') && "⚠️"}</div>
                               <div className={`text-[10px] hover:underline ${isDuplicate(app.email, 'email') ? 'text-orange-600 font-bold' : 'text-blue-600'}`}><a href={`mailto:${app.email}`}>{app.email}</a> {isDuplicate(app.email, 'email') && "⚠️"}</div>
+                              
                               <div className="flex items-center gap-2 mt-1">
-                                {app.resumeUrl && <a href={app.resumeUrl} target="_blank" rel="noopener noreferrer" className="text-[9px] bg-red-50 text-corp-red px-2 py-0.5 rounded font-black uppercase border border-red-100">PDF</a>}
+                                {app.resumeUrl && <a href={app.resumeUrl} target="_blank" rel="noopener noreferrer" className="text-[9px] bg-red-50 text-corp-red px-2 py-0.5 rounded font-black uppercase tracking-widest border border-red-100 hover:bg-red-100">PDF</a>}
+                                {app.linkedin && <a href={app.linkedin} target="_blank" rel="noopener noreferrer" className="text-[9px] bg-blue-50 text-blue-700 px-2 py-0.5 rounded font-black uppercase tracking-widest border border-blue-100 hover:bg-blue-100">LinkedIn</a>}
+                                {app.portfolio && <a href={app.portfolio} target="_blank" rel="noopener noreferrer" className="text-[9px] bg-gray-100 text-gray-700 px-2 py-0.5 rounded font-black uppercase tracking-widest border border-gray-200 hover:bg-gray-200">Portfolio</a>}
+                                
                                 {/* AUDIT LOG VIEW */}
                                 {app.history && app.history.length > 0 && (
                                   <div className="relative group inline-block">
@@ -439,6 +497,7 @@ export default function Admin() {
                                   </div>
                                 )}
                               </div>
+
                            </div>
                         </td>
                       </tr>
@@ -460,7 +519,13 @@ export default function Admin() {
                   <p className="text-xs text-red-600 mt-1">These records are hidden from the main view. Super Admins can permanently erase them.</p>
                </div>
                <table className="w-full text-left border-collapse">
-                  <thead><tr className="bg-gray-50 border-b border-gray-200"><th className="px-6 py-4 text-[10px] font-bold text-gray-500 uppercase">ID & Candidate</th><th className="px-6 py-4 text-[10px] font-bold text-gray-500 uppercase">Deletion Details</th><th className="px-6 py-4 text-[10px] font-bold text-gray-500 uppercase text-right">Actions</th></tr></thead>
+                  <thead>
+                    <tr className="bg-gray-50 border-b border-gray-200">
+                      <th className="px-6 py-4 text-[10px] font-bold text-gray-500 uppercase">ID & Candidate</th>
+                      <th className="px-6 py-4 text-[10px] font-bold text-gray-500 uppercase">Deletion Details</th>
+                      <th className="px-6 py-4 text-[10px] font-bold text-gray-500 uppercase text-right">Actions</th>
+                    </tr>
+                  </thead>
                   <tbody className="divide-y divide-gray-100">
                     {deletedApplications.map(app => (
                       <tr key={app.id} className="hover:bg-gray-50">
@@ -487,61 +552,16 @@ export default function Admin() {
             </div>
           )}
 
-          {/* ─── TAB: TEAM MANAGEMENT ─── */}
-          {activeTab === "team" && staffData.role === "Super Admin" && (
-            <div className="animate-fade-in grid lg:grid-cols-3 gap-8">
-               <div className="lg:col-span-1">
-                 <div className="bg-white p-6 border border-gray-200 rounded-sm shadow-sm">
-                   <h3 className="font-display text-xl font-bold mb-6">Add Staff Member</h3>
-                   <form onSubmit={addStaffMember} className="space-y-4">
-                     <div><label className="block text-[10px] font-bold uppercase tracking-widest text-gray-500 mb-1">Full Name</label><input type="text" required value={newStaff.name} onChange={e => setNewStaff({...newStaff, name: e.target.value})} className="w-full px-3 py-2 border border-gray-300 rounded text-sm outline-none focus:border-corp-blue" /></div>
-                     <div><label className="block text-[10px] font-bold uppercase tracking-widest text-gray-500 mb-1">Gmail Address (For Login)</label><input type="email" required value={newStaff.email} onChange={e => setNewStaff({...newStaff, email: e.target.value.toLowerCase()})} className="w-full px-3 py-2 border border-gray-300 rounded text-sm outline-none focus:border-corp-blue" /></div>
-                     <div><label className="block text-[10px] font-bold uppercase tracking-widest text-gray-500 mb-1">Employee ID</label><input type="text" required value={newStaff.employeeId} onChange={e => setNewStaff({...newStaff, employeeId: e.target.value})} className="w-full px-3 py-2 border border-gray-300 rounded text-sm outline-none focus:border-corp-blue" /></div>
-                     <div><label className="block text-[10px] font-bold uppercase tracking-widest text-gray-500 mb-1">Access Role</label>
-                        <select value={newStaff.role} onChange={e => setNewStaff({...newStaff, role: e.target.value})} className="w-full px-3 py-2 border border-gray-300 rounded text-sm outline-none focus:border-corp-blue bg-white">
-                          <option value="User">User (View Only)</option><option value="Admin">Admin (Review & Email)</option><option value="Super Admin">Super Admin (Full Access)</option>
-                        </select>
-                     </div>
-                     <button type="submit" className="w-full py-3 bg-corp-blue text-white font-bold text-[10px] uppercase tracking-widest rounded mt-4">Create Access</button>
-                   </form>
-                 </div>
-               </div>
-
-               <div className="lg:col-span-2">
-                 <div className="bg-white border border-gray-200 rounded-sm shadow-sm overflow-hidden">
-                    <div className="p-4 bg-gray-50 border-b border-gray-200 font-bold text-sm text-gray-800">Active HR Directory</div>
-                    <table className="w-full text-left border-collapse">
-                      <thead><tr className="border-b border-gray-200"><th className="px-4 py-3 text-[10px] text-gray-500 uppercase">Staff</th><th className="px-4 py-3 text-[10px] text-gray-500 uppercase">Role & ID</th><th className="px-4 py-3 text-[10px] text-gray-500 uppercase text-right">Action</th></tr></thead>
-                      <tbody className="divide-y divide-gray-100">
-                        {staffList.map(staff => (
-                          <tr key={staff.id}>
-                            <td className="px-4 py-3">
-                              <div className="font-bold text-sm text-gray-900">{staff.name}</div>
-                              <div className="text-[10px] text-gray-500">{staff.email}</div>
-                            </td>
-                            <td className="px-4 py-3">
-                              <div className={`inline-block px-2 py-1 rounded text-[10px] font-black uppercase tracking-widest ${staff.role === 'Super Admin' ? 'bg-corp-gold text-white' : staff.role === 'Admin' ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-700'}`}>{staff.role}</div>
-                              <div className="text-[10px] font-mono text-gray-400 mt-1">{staff.employeeId}</div>
-                            </td>
-                            <td className="px-4 py-3 text-right">
-                              {staff.email !== user.email && (
-                                <button onClick={() => removeStaffMember(staff.id)} className="text-[10px] font-bold text-red-600 hover:text-red-800 uppercase tracking-widest border border-red-200 px-2 py-1 rounded bg-red-50 hover:bg-red-100">Revoke</button>
-                              )}
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                 </div>
-               </div>
-            </div>
-          )}
-
           {/* ─── TAB: TEMPLATES ─── */}
           {activeTab === "templates" && (
             <div className="animate-fade-in bg-white p-8 rounded-sm shadow-sm border border-gray-200">
-              <h3 className="font-display text-2xl font-bold mb-2">Email Templates</h3>
-              <p className="text-sm text-gray-500 mb-6">These templates auto-fill when you use the email buttons. You can use tags like <b>[Name]</b>, <b>[ID]</b>, <b>[Brand]</b>, and <b>[Resume]</b>.</p>
+              <div className="flex justify-between items-center mb-6">
+                <div>
+                  <h3 className="font-display text-2xl font-bold mb-2">Email Templates</h3>
+                  <p className="text-sm text-gray-500">Use these tags to auto-fill applicant data: <b className="text-corp-blue">[Name], [Gender], [Phone], [AltPhone], [University], [College], [Stream], [Major], [Batch], [Year], [Duration], [Brand], [LinkedIn], [Portfolio], [Resume]</b>.</p>
+                </div>
+                <button onClick={() => { if(window.confirm("Reset all templates to default? This will bring back missing templates!")) { setTemplates(defaultTemplates); showToast("Templates restored!"); } }} className="px-4 py-2 bg-gray-900 text-white text-[10px] font-bold tracking-widest uppercase rounded shadow-sm hover:bg-black">🔄 Restore Defaults</button>
+              </div>
               <div className="grid md:grid-cols-2 gap-8">
                 {Object.keys(templates).map(key => (
                   <div key={key}>
@@ -552,14 +572,27 @@ export default function Admin() {
               </div>
             </div>
           )}
-
+          
           {/* ─── TAB: ENQUIRIES ─── */}
           {activeTab === "enquiries" && (
             <table className="w-full text-left border-collapse bg-white shadow-sm rounded-sm overflow-hidden">
-                <thead><tr className="bg-gray-50 border-b border-gray-200"><th className="px-6 py-4 text-[10px] font-bold text-gray-500 uppercase tracking-widest w-48">Date</th><th className="px-6 py-4 text-[10px] font-bold text-gray-500 uppercase tracking-widest w-64">Sender</th><th className="px-6 py-4 text-[10px] font-bold text-gray-500 uppercase tracking-widest">Message</th></tr></thead>
+                <thead>
+                  <tr className="bg-gray-50 border-b border-gray-200">
+                    <th className="px-6 py-4 text-[10px] font-bold text-gray-500 uppercase tracking-widest w-48">Date</th>
+                    <th className="px-6 py-4 text-[10px] font-bold text-gray-500 uppercase tracking-widest w-64">Sender</th>
+                    <th className="px-6 py-4 text-[10px] font-bold text-gray-500 uppercase tracking-widest">Message</th>
+                  </tr>
+                </thead>
                 <tbody className="divide-y divide-gray-100">
                   {enquiries.map(enq => (
-                    <tr key={enq.id} className="hover:bg-gray-50 transition-colors"><td className="px-6 py-4 text-xs text-gray-400 font-bold align-top">{enq.dateStr}</td><td className="px-6 py-4 align-top"><div className="font-bold text-gray-900 mb-2">{enq.name}</div><a href={`mailto:${enq.email}`} className="text-[10px] bg-blue-50 text-blue-700 px-2 py-1 rounded font-black uppercase tracking-widest hover:bg-blue-100">Reply Email</a></td><td className="px-6 py-4 align-top text-sm text-gray-700 whitespace-pre-wrap font-body">{enq.message}</td></tr>
+                    <tr key={enq.id} className="hover:bg-gray-50 transition-colors">
+                      <td className="px-6 py-4 text-xs text-gray-400 font-bold align-top">{enq.dateStr}</td>
+                      <td className="px-6 py-4 align-top">
+                        <div className="font-bold text-gray-900 mb-2">{enq.name}</div>
+                        <a href={`mailto:${enq.email}`} className="text-[10px] bg-blue-50 text-blue-700 px-2 py-1 rounded font-black uppercase tracking-widest hover:bg-blue-100">Reply Email</a>
+                      </td>
+                      <td className="px-6 py-4 align-top text-sm text-gray-700 whitespace-pre-wrap font-body">{enq.message}</td>
+                    </tr>
                   ))}
                 </tbody>
             </table>
