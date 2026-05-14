@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { auth, provider, db } from "./firebase";
 import { signInWithPopup, signOut, onAuthStateChanged } from "firebase/auth";
-import { collection, getDocs, query, orderBy, doc, updateDoc, where, addDoc, serverTimestamp } from "firebase/firestore";
+import { collection, getDocs, query, doc, updateDoc, where, addDoc, serverTimestamp } from "firebase/firestore";
 
 export default function EmployeePortal() {
   const [user, setUser] = useState(null);
@@ -14,6 +14,9 @@ export default function EmployeePortal() {
   const [toast, setToast] = useState({ show: false, message: "", type: "success" });
 
   const [newLeave, setNewLeave] = useState({ startDate: "", endDate: "", reason: "", type: "Sick Leave" });
+  
+  // NEW: Profile Photo Upload State
+  const [isUploading, setIsUploading] = useState(false);
 
   const showToast = (message, type = "success") => {
     setToast({ show: true, message, type });
@@ -28,7 +31,7 @@ export default function EmployeePortal() {
         if (!snap.empty) {
           setStaffData({ id: snap.docs[0].id, ...snap.docs[0].data() });
           setUser(currentUser);
-          fetchAllData();
+          fetchAllData(currentUser.email); // Pass email to fetch ONLY their data
         } else {
           signOut(auth); setUser(null); setStaffData(null);
           alert("Access Denied: You are not registered in the Employee Directory.");
@@ -39,12 +42,17 @@ export default function EmployeePortal() {
     return () => unsubscribe();
   }, []);
 
-  const fetchAllData = async () => {
+  // SECURE FETCH: Only pull data belonging to this specific user
+  const fetchAllData = async (userEmail) => {
     try {
-      const snapTasks = await getDocs(query(collection(db, "tasks"), orderBy("createdAt", "desc")));
-      setTasks(snapTasks.docs.map(d => ({ id: d.id, ...d.data() })));
-      const snapLeaves = await getDocs(query(collection(db, "leaves"), orderBy("appliedAt", "desc")));
-      setLeaves(snapLeaves.docs.map(d => ({ id: d.id, ...d.data() })));
+      const snapTasks = await getDocs(query(collection(db, "tasks"), where("assignedToEmail", "==", userEmail)));
+      // Sort locally to avoid complex Firestore indexes
+      const sortedTasks = snapTasks.docs.map(d => ({ id: d.id, ...d.data() })).sort((a, b) => b.createdAt - a.createdAt);
+      setTasks(sortedTasks);
+
+      const snapLeaves = await getDocs(query(collection(db, "leaves"), where("applicantEmail", "==", userEmail)));
+      const sortedLeaves = snapLeaves.docs.map(d => ({ id: d.id, ...d.data() })).sort((a, b) => b.appliedAt - a.appliedAt);
+      setLeaves(sortedLeaves);
     } catch (e) { showToast("Failed to load data", "error"); }
   };
 
@@ -67,8 +75,29 @@ export default function EmployeePortal() {
     } catch (error) { showToast("Failed to submit leave", "error"); }
   };
 
-  const myTasks = tasks.filter(t => t.assignedToEmail === user?.email);
-  const myLeaves = leaves.filter(l => l.applicantEmail === user?.email);
+  // NEW: Upload Photo to Cloudinary and save to Staff Profile
+  const handlePhotoUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    if (file.size > 2 * 1024 * 1024) { showToast("Image must be under 2MB", "error"); return; }
+    
+    setIsUploading(true);
+    showToast("Uploading photo...");
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("upload_preset", import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET);
+      const res = await fetch(`https://api.cloudinary.com/v1_1/${import.meta.env.VITE_CLOUDINARY_CLOUD_NAME}/image/upload`, { method: "POST", body: formData });
+      const data = await res.json();
+      
+      if (data.secure_url) {
+        await updateDoc(doc(db, "staff", staffData.id), { photoUrl: data.secure_url });
+        setStaffData({ ...staffData, photoUrl: data.secure_url });
+        showToast("Profile Photo Updated!");
+      }
+    } catch (error) { showToast("Failed to upload photo", "error"); }
+    setIsUploading(false);
+  };
 
   if (loadingAuth) return <div className="min-h-screen bg-gray-50 flex items-center justify-center text-xs font-bold uppercase tracking-widest">Verifying Access...</div>;
 
@@ -94,34 +123,101 @@ export default function EmployeePortal() {
           <div><div className="font-bold tracking-widest uppercase text-[10px] text-gray-400">Employee</div><div className="text-sm font-bold">Workspace</div></div>
         </div>
         <div className="p-6 flex-1 flex flex-col gap-2">
-          <button onClick={() => setActiveTab("my-tasks")} className={`text-left px-4 py-3 rounded-sm text-sm font-bold transition-colors flex items-center justify-between ${activeTab === "my-tasks" ? "bg-white/10 text-white" : "text-gray-400 hover:text-white"}`}>✅ My Tasks {myTasks.filter(t => t.status === 'Pending').length > 0 && <span className="bg-red-500 text-white text-[9px] px-2 py-0.5 rounded-full">{myTasks.filter(t => t.status === 'Pending').length}</span>}</button>
+          <button onClick={() => setActiveTab("my-tasks")} className={`text-left px-4 py-3 rounded-sm text-sm font-bold transition-colors flex items-center justify-between ${activeTab === "my-tasks" ? "bg-white/10 text-white" : "text-gray-400 hover:text-white"}`}>✅ My Tasks {tasks.filter(t => t.status === 'Pending').length > 0 && <span className="bg-red-500 text-white text-[9px] px-2 py-0.5 rounded-full">{tasks.filter(t => t.status === 'Pending').length}</span>}</button>
           <button onClick={() => setActiveTab("my-leaves")} className={`text-left px-4 py-3 rounded-sm text-sm font-bold transition-colors ${activeTab === "my-leaves" ? "bg-white/10 text-white" : "text-gray-400 hover:text-white"}`}>📅 Request Leave</button>
+          <button onClick={() => setActiveTab("profile")} className={`text-left px-4 py-3 rounded-sm text-sm font-bold transition-colors ${activeTab === "profile" ? "bg-white/10 text-white" : "text-gray-400 hover:text-white"}`}>👤 My Profile</button>
         </div>
         <div className="p-6 border-t border-white/10 bg-white/5 shrink-0">
+          <div className="flex items-center gap-3 mb-4">
+            {staffData.photoUrl ? (
+              <img src={staffData.photoUrl} alt="Profile" className="w-8 h-8 rounded-full object-cover border border-white/20" />
+            ) : (
+              <div className="w-8 h-8 rounded-full bg-gray-700 flex items-center justify-center font-bold text-xs uppercase">{staffData.name.charAt(0)}</div>
+            )}
+            <div className="overflow-hidden">
+              <div className="text-xs font-bold text-white truncate">{staffData.name}</div>
+              <div className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">ID: {staffData.employeeId}</div>
+            </div>
+          </div>
           <button onClick={() => signOut(auth)} className="w-full py-2 border border-white/20 text-gray-300 hover:bg-white/10 text-[10px] font-bold uppercase tracking-widest rounded-sm transition-colors">Sign Out</button>
         </div>
       </aside>
 
       <main className="flex-1 h-screen overflow-y-auto p-8">
+        
+        {/* PROFILE TAB */}
+        {activeTab === "profile" && (
+          <div className="animate-fade-in max-w-2xl bg-white border border-gray-200 rounded-sm shadow-sm overflow-hidden p-8">
+            <h3 className="font-display text-2xl font-bold mb-6">Employee Profile</h3>
+            <div className="flex flex-col md:flex-row gap-8 items-start">
+              <div className="flex flex-col items-center gap-4">
+                <div className="w-32 h-32 rounded-full overflow-hidden border-4 border-gray-100 bg-gray-50 flex items-center justify-center shadow-inner relative group">
+                  {staffData.photoUrl ? (
+                    <img src={staffData.photoUrl} alt="Profile" className="w-full h-full object-cover" />
+                  ) : (
+                    <span className="text-4xl text-gray-300 font-black">{staffData.name.charAt(0)}</span>
+                  )}
+                  <label className="absolute inset-0 bg-black/50 hidden group-hover:flex items-center justify-center cursor-pointer transition-all">
+                     <span className="text-white text-xs font-bold uppercase tracking-widest text-center px-2">{isUploading ? "Uploading..." : "Change Photo"}</span>
+                     <input type="file" accept="image/*" onChange={handlePhotoUpload} disabled={isUploading} className="hidden" />
+                  </label>
+                </div>
+                <p className="text-[10px] text-gray-400 uppercase font-bold text-center">Click image to update<br/>Max 2MB (JPG/PNG)</p>
+              </div>
+              
+              <div className="flex-1 space-y-4 w-full">
+                <div className="bg-gray-50 p-4 rounded-sm border border-gray-100">
+                  <div className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Full Name</div>
+                  <div className="text-gray-900 font-bold text-lg">{staffData.name}</div>
+                </div>
+                <div className="bg-gray-50 p-4 rounded-sm border border-gray-100">
+                  <div className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Company Login Email</div>
+                  <div className="text-gray-900 font-bold">{staffData.email}</div>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="bg-gray-50 p-4 rounded-sm border border-gray-100">
+                    <div className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Employee ID</div>
+                    <div className="text-corp-blue font-mono font-bold">{staffData.employeeId}</div>
+                  </div>
+                  <div className="bg-gray-50 p-4 rounded-sm border border-gray-100">
+                    <div className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Access Role</div>
+                    <div className="text-gray-900 font-bold">{staffData.role}</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* MY TASKS */}
         {activeTab === "my-tasks" && (
           <div className="animate-fade-in bg-white border border-gray-200 rounded-sm shadow-sm overflow-hidden">
              <div className="p-4 bg-gray-50 border-b border-gray-200 font-bold text-sm text-gray-800">Tasks Assigned to Me</div>
              <table className="w-full text-left border-collapse">
-                <thead><tr className="border-b border-gray-200"><th className="px-6 py-3 text-[10px] text-gray-500 uppercase">Task & Deadline</th><th className="px-6 py-3 text-[10px] text-gray-500 uppercase">Assigned By</th><th className="px-6 py-3 text-[10px] text-gray-500 uppercase">My Status</th></tr></thead>
+                <thead><tr className="border-b border-gray-200"><th className="px-6 py-3 text-[10px] text-gray-500 uppercase font-bold tracking-widest">Task Details</th><th className="px-6 py-3 text-[10px] text-gray-500 uppercase font-bold tracking-widest">Assigned By</th><th className="px-6 py-3 text-[10px] text-gray-500 uppercase font-bold tracking-widest">My Status</th></tr></thead>
                 <tbody className="divide-y divide-gray-100">
-                  {myTasks.map(task => (
+                  {tasks.map(task => (
                     <tr key={task.id} className="hover:bg-gray-50">
-                      <td className="px-6 py-4"><div className="font-bold text-sm text-gray-900 mb-1">{task.title}</div><div className="text-xs text-gray-600 mb-2">{task.description}</div><div className="text-[10px] font-bold text-red-600 uppercase">Due: {task.deadline}</div></td>
+                      <td className="px-6 py-4">
+                        <div className="font-bold text-sm text-gray-900 mb-1">{task.title}</div>
+                        <div className="text-xs text-gray-600 mb-2 whitespace-pre-wrap">{task.description}</div>
+                        <div className="text-[10px] font-bold text-red-600 uppercase tracking-widest bg-red-50 inline-block px-2 py-1 rounded">Due: {task.deadline}</div>
+                      </td>
                       <td className="px-6 py-4 text-xs font-bold text-gray-600">{task.assignedBy}</td>
-                      <td className="px-6 py-4"><select value={task.status} onChange={(e) => updateTaskStatus(task.id, e.target.value)} className="text-[10px] font-black uppercase rounded-sm px-3 py-2 border outline-none cursor-pointer"><option>Pending</option><option>In Progress</option><option>Completed</option></select></td>
+                      <td className="px-6 py-4">
+                        <select value={task.status} onChange={(e) => updateTaskStatus(task.id, e.target.value)} className={`text-[10px] font-black tracking-widest uppercase rounded-sm px-3 py-2 border outline-none cursor-pointer ${task.status === 'Pending' ? 'bg-yellow-50 text-yellow-700' : task.status === 'In Progress' ? 'bg-blue-50 text-blue-700' : 'bg-green-50 text-green-700'}`}>
+                          <option>Pending</option><option>In Progress</option><option>Completed</option>
+                        </select>
+                      </td>
                     </tr>
                   ))}
-                  {myTasks.length === 0 && <tr><td colSpan="3" className="px-6 py-12 text-center text-gray-400 text-sm font-bold uppercase">No tasks assigned</td></tr>}
+                  {tasks.length === 0 && <tr><td colSpan="3" className="px-6 py-12 text-center text-gray-400 text-sm font-bold uppercase tracking-widest">You have no assigned tasks.</td></tr>}
                 </tbody>
              </table>
           </div>
         )}
 
+        {/* MY LEAVES */}
         {activeTab === "my-leaves" && (
           <div className="animate-fade-in grid lg:grid-cols-3 gap-8">
              <div className="lg:col-span-1">
@@ -132,7 +228,7 @@ export default function EmployeePortal() {
                    <div><label className="block text-[10px] font-bold uppercase text-gray-500 mb-1">Start Date</label><input type="date" required value={newLeave.startDate} onChange={e => setNewLeave({...newLeave, startDate: e.target.value})} className="w-full px-3 py-2 border border-gray-300 rounded text-sm outline-none" /></div>
                    <div><label className="block text-[10px] font-bold uppercase text-gray-500 mb-1">End Date</label><input type="date" required value={newLeave.endDate} onChange={e => setNewLeave({...newLeave, endDate: e.target.value})} className="w-full px-3 py-2 border border-gray-300 rounded text-sm outline-none" /></div>
                    <div><label className="block text-[10px] font-bold uppercase text-gray-500 mb-1">Reason</label><textarea required rows="3" value={newLeave.reason} onChange={e => setNewLeave({...newLeave, reason: e.target.value})} className="w-full px-3 py-2 border border-gray-300 rounded text-sm outline-none resize-none" /></div>
-                   <button type="submit" className="w-full py-3 bg-[#10b981] text-white font-bold text-[10px] uppercase rounded transition-colors">Submit Request</button>
+                   <button type="submit" className="w-full py-3 bg-[#10b981] hover:bg-green-600 text-white font-bold text-[10px] uppercase rounded transition-colors tracking-widest">Submit Request</button>
                  </form>
                </div>
              </div>
@@ -140,9 +236,9 @@ export default function EmployeePortal() {
                <div className="bg-white border border-gray-200 rounded-sm shadow-sm overflow-hidden">
                   <div className="p-4 bg-gray-50 border-b border-gray-200 font-bold text-sm text-gray-800">My Leave History</div>
                   <table className="w-full text-left border-collapse">
-                    <thead><tr className="border-b border-gray-200"><th className="px-6 py-3 text-[10px] text-gray-500 uppercase">Dates & Type</th><th className="px-6 py-3 text-[10px] text-gray-500 uppercase">Status</th></tr></thead>
+                    <thead><tr className="border-b border-gray-200"><th className="px-6 py-3 text-[10px] text-gray-500 uppercase font-bold tracking-widest">Dates & Type</th><th className="px-6 py-3 text-[10px] text-gray-500 uppercase font-bold tracking-widest">Status</th></tr></thead>
                     <tbody className="divide-y divide-gray-100">
-                      {myLeaves.map(leave => (
+                      {leaves.map(leave => (
                         <tr key={leave.id} className="hover:bg-gray-50">
                           <td className="px-6 py-4"><div className="font-bold text-sm text-gray-900">{new Date(leave.startDate).toLocaleDateString('en-IN')} to {new Date(leave.endDate).toLocaleDateString('en-IN')}</div><div className="text-[10px] font-black uppercase text-gray-500 mt-1 mb-2">{leave.type}</div><div className="text-xs text-gray-600 italic">"{leave.reason}"</div></td>
                           <td className="px-6 py-4"><div className={`inline-block px-3 py-1 rounded text-[10px] font-black uppercase ${leave.status === 'Approved' ? 'bg-green-100 text-green-700' : leave.status === 'Rejected' ? 'bg-red-100 text-red-700' : 'bg-yellow-100 text-yellow-700'}`}>{leave.status}</div></td>
