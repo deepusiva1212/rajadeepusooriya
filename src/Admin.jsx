@@ -1,14 +1,14 @@
 import { useState, useEffect } from "react";
 import { auth, provider, db } from "./firebase";
 import { signInWithPopup, signOut, onAuthStateChanged } from "firebase/auth";
-import { collection, getDocs, query, orderBy, doc, updateDoc, deleteDoc, where, addDoc, serverTimestamp } from "firebase/firestore";
+import { collection, getDocs, query, orderBy, doc, updateDoc, deleteDoc, where, addDoc } from "firebase/firestore";
 import JSZip from "jszip";
 import { saveAs } from "file-saver";
 
 export default function Admin() {
   // ─── AUTH & RBAC STATE ──────────────────────────────────────────────
   const [user, setUser] = useState(null);
-  const [staffData, setStaffData] = useState(null); // Holds role, name, empId
+  const [staffData, setStaffData] = useState(null); 
   const [loadingAuth, setLoadingAuth] = useState(true);
   
   // ─── DATA STATE ─────────────────────────────────────────────────────
@@ -18,27 +18,33 @@ export default function Admin() {
   const [loadingData, setLoadingData] = useState(false);
   
   // ─── UI STATE ───────────────────────────────────────────────────────
-  const [activeTab, setActiveTab] = useState("dashboard"); // dashboard, apps, trash, team, templates
+  const [activeTab, setActiveTab] = useState("dashboard"); 
   const [search, setSearch] = useState("");
   const [filterBrand, setFilterBrand] = useState("All Brands");
   const [filterBatch, setFilterBatch] = useState("All Batches");
+  const [showDuplicatesOnly, setShowDuplicatesOnly] = useState(false); 
   const [selectedApps, setSelectedApps] = useState([]);
   const [toast, setToast] = useState({ show: false, message: "", type: "success" });
 
-  // ─── NEW: TEAM MANAGEMENT STATE ─────────────────────────────────────
   const [newStaff, setNewStaff] = useState({ name: "", email: "", role: "User", employeeId: "" });
 
   // ─── EMAIL TEMPLATES ────────────────────────────────────────────────
+  const defaultTemplates = {
+    Welcome: "Dear [Name],\n\nWe have successfully received your application ([ID]) for the [Brand] internship.\n\nDetails Submitted:\nGender: [Gender]\nPrimary Phone: [Phone]\nAlt Phone: [AltPhone]\nUniversity: [University]\nCollege: [College]\nStream: [Stream]\nMajor: [Major]\nBatch: [Batch]\nYear of Study: [Year]\nDuration: [Duration]\nResume: [Resume]\nLinkedIn: [LinkedIn]\nPortfolio: [Portfolio]\n\nOur team will review your profile and get back to you.\n\nRegards,\nHR Team",
+    Selected: "Dear [Name],\n\nCongratulations! We are pleased to inform you that your application ([ID]) for the [Brand] track has been selected.\n\nRegards,\nRaja Deepu Sooriya Pvt Ltd",
+    Interviewing: "Dear [Name],\n\nYour application ([ID]) has been shortlisted! We would like to schedule an interview with you.\n\nRegards,\nRaja Deepu Sooriya Pvt Ltd",
+    Rejected: "Dear [Name],\n\nThank you for applying. After careful consideration, we regret to inform you that we will not be moving forward with your application at this time.\n\nRegards,\nRaja Deepu Sooriya Pvt Ltd",
+    BulkWelcome: "Dear Candidate,\n\nThis is an automated confirmation that we have received your internship application. We are currently processing it and will reach out soon.\n\nRegards,\nRaja Deepu Sooriya Pvt Ltd",
+    Bulk: "Dear Candidate,\n\nWe are writing to provide an update regarding your recent application to our internship programme.\n\n[Insert Message Here]\n\nRegards,\nRaja Deepu Sooriya Pvt Ltd"
+  };
+
   const [templates, setTemplates] = useState(() => {
     const saved = localStorage.getItem('rds_email_templates');
-    return saved ? JSON.parse(saved) : {
-      Welcome: "Dear [Name],\n\nWe have successfully received your application ([ID]) for the [Brand] internship.\n\nDetails Submitted:\nPhone: [Phone]\nEmail: [Email]\nResume: [Resume]\n\nOur team will review your profile and get back to you.\n\nRegards,\nHR Team",
-      Selected: "Dear [Name],\n\nCongratulations! We are pleased to inform you that your application ([ID]) for the [Brand] track has been selected.\n\nRegards,\nRaja Deepu Sooriya Pvt Ltd",
-      Interviewing: "Dear [Name],\n\nYour application ([ID]) has been shortlisted! We would like to schedule an interview with you.\n\nRegards,\nRaja Deepu Sooriya Pvt Ltd",
-      Rejected: "Dear [Name],\n\nThank you for applying. After careful consideration, we regret to inform you that we will not be moving forward with your application at this time.\n\nRegards,\nRaja Deepu Sooriya Pvt Ltd",
-      BulkWelcome: "Dear Candidate,\n\nThis is an automated confirmation that we have received your internship application. We are currently processing it and will reach out soon.\n\nRegards,\nRaja Deepu Sooriya Pvt Ltd",
-      Bulk: "Dear Candidate,\n\nWe are writing to provide an update regarding your recent application to our internship programme.\n\n[Insert Message Here]\n\nRegards,\nRaja Deepu Sooriya Pvt Ltd"
-    };
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      return { ...defaultTemplates, ...parsed }; 
+    }
+    return defaultTemplates;
   });
 
   useEffect(() => { localStorage.setItem('rds_email_templates', JSON.stringify(templates)); }, [templates]);
@@ -48,30 +54,22 @@ export default function Admin() {
     setTimeout(() => setToast({ show: false, message: "", type: "success" }), 3000);
   };
 
-  // ─── AUTHENTICATION & SECURITY VAULT LOGIC ──────────────────────────
+  // ─── AUTHENTICATION & DATA FETCHING ─────────────────────────────────
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       if (currentUser) {
-        // SECURITY CHECK: Does this email exist in the staff collection?
         const q = query(collection(db, "staff"), where("email", "==", currentUser.email), where("isActive", "==", true));
         const snap = await getDocs(q);
-        
         if (!snap.empty) {
           const staffProfile = snap.docs[0].data();
           setStaffData({ id: snap.docs[0].id, ...staffProfile });
           setUser(currentUser);
           fetchAllData(staffProfile.role);
         } else {
-          // Intruder / Unauthorized user
-          signOut(auth);
-          setUser(null);
-          setStaffData(null);
+          signOut(auth); setUser(null); setStaffData(null);
           alert("Access Denied: Your email is not registered as active HR Staff.");
         }
-      } else {
-        setUser(null);
-        setStaffData(null);
-      }
+      } else { setUser(null); setStaffData(null); }
       setLoadingAuth(false);
     });
     return () => unsubscribe();
@@ -80,137 +78,94 @@ export default function Admin() {
   const fetchAllData = async (role) => {
     setLoadingData(true);
     try {
-      // 1. Fetch Applications
       const qApps = query(collection(db, "applications"), orderBy("submittedAt", "desc"));
       const snapApps = await getDocs(qApps);
-      setApplications(snapApps.docs.map(doc => ({
-        id: doc.id, ...doc.data(),
-        dateStr: doc.data().submittedAt ? doc.data().submittedAt.toDate().toLocaleString('en-IN', { dateStyle: 'short', timeStyle: 'short' }) : "Just now"
-      })));
+      setApplications(snapApps.docs.map(doc => ({ id: doc.id, ...doc.data(), dateStr: doc.data().submittedAt ? doc.data().submittedAt.toDate().toLocaleString('en-IN', { dateStyle: 'short', timeStyle: 'short' }) : "Just now" })));
 
-      // 2. Fetch Enquiries
       const qEnqs = query(collection(db, "enquiries"), orderBy("submittedAt", "desc"));
       const snapEnqs = await getDocs(qEnqs);
-      setEnquiries(snapEnqs.docs.map(doc => ({
-        id: doc.id, ...doc.data(),
-        dateStr: doc.data().submittedAt ? doc.data().submittedAt.toDate().toLocaleString('en-IN', { dateStyle: 'short', timeStyle: 'short' }) : "Just now"
-      })));
+      setEnquiries(snapEnqs.docs.map(doc => ({ id: doc.id, ...doc.data(), dateStr: doc.data().submittedAt ? doc.data().submittedAt.toDate().toLocaleString('en-IN', { dateStyle: 'short', timeStyle: 'short' }) : "Just now" })));
 
-      // 3. Fetch Staff List (Only if Super Admin)
       if (role === "Super Admin") {
         const snapStaff = await getDocs(collection(db, "staff"));
         setStaffList(snapStaff.docs.map(d => ({ id: d.id, ...d.data() })));
       }
-
-    } catch (e) { 
-      console.error(e); 
-      showToast("Failed to sync data", "error");
-    }
+    } catch (e) { showToast("Failed to sync data", "error"); }
     setLoadingData(false);
   };
 
-  // ─── AUDIT LOGGING & STATUS UPDATES ─────────────────────────────────
   const updateApplicationStatus = async (app, newStatus) => {
-    if (staffData.role === "User") {
-      showToast("Access Denied: Users cannot change application status.", "error");
-      return;
-    }
-
+    if (staffData.role === "User") { showToast("Access Denied: Users cannot change status.", "error"); return; }
     try {
-      // Create an Audit Trail Entry
-      const historyEntry = {
-        status: newStatus,
-        updatedBy: staffData.name,
-        email: staffData.email,
-        date: new Date().toLocaleString('en-IN')
-      };
+      const historyEntry = { status: newStatus, updatedBy: staffData.name, email: staffData.email, date: new Date().toLocaleString('en-IN') };
       const newHistory = [...(app.history || []), historyEntry];
-
       await updateDoc(doc(db, "applications", app.id), { status: newStatus, history: newHistory });
       setApplications(applications.map(a => a.id === app.id ? { ...a, status: newStatus, history: newHistory } : a));
       showToast(`Status updated to ${newStatus}`);
     } catch (e) { showToast("Failed to update status.", "error"); }
   };
 
-  // ─── SOFT DELETE LOGIC (TRASH BIN) ──────────────────────────────────
   const handleSoftDelete = async () => {
-    if (staffData.role === "User") {
-      showToast("Access Denied: You do not have permission to delete.", "error"); return;
-    }
-
-    const password = window.prompt("SECURITY CHECK: Type 'DELETE' to confirm you want to move these to Trash:");
+    if (staffData.role === "User") { showToast("Access Denied.", "error"); return; }
+    const password = window.prompt("SECURITY CHECK: Type 'DELETE' to confirm:");
     if (password !== "DELETE") { showToast("Deletion Cancelled", "error"); return; }
-
-    const deleteNote = window.prompt("Optional: Enter a reason for deleting these applications (e.g., 'Spam', 'Duplicate'):") || "No reason provided";
-
+    const deleteNote = window.prompt("Optional reason for deleting:") || "No reason provided";
+    
     showToast("Moving to Trash...");
     try {
       const deletionTime = new Date().toLocaleString('en-IN');
       for (const appId of selectedApps) {
-        await updateDoc(doc(db, "applications", appId), { 
-          isDeleted: true, 
-          deletedAt: deletionTime, 
-          deletedBy: staffData.name, 
-          deleteNote: deleteNote 
-        });
+        await updateDoc(doc(db, "applications", appId), { isDeleted: true, deletedAt: deletionTime, deletedBy: staffData.name, deleteNote: deleteNote });
       }
       setApplications(applications.map(app => selectedApps.includes(app.id) ? { ...app, isDeleted: true, deletedAt: deletionTime, deletedBy: staffData.name, deleteNote: deleteNote } : app));
       setSelectedApps([]);
-      showToast(`${selectedApps.length} applications moved to Trash.`);
+      showToast("Moved to Trash.");
     } catch (error) { showToast("Failed to delete.", "error"); }
   };
 
-  // ─── HARD DELETE (SUPER ADMIN ONLY) ─────────────────────────────────
   const handlePermanentDelete = async (appId) => {
-    if (staffData.role !== "Super Admin") {
-      showToast("Access Denied: Only Super Admins can permanently delete data.", "error"); return;
-    }
-    if (!window.confirm("WARNING: This will permanently erase this data from Firebase. Continue?")) return;
-
-    try {
-      await deleteDoc(doc(db, "applications", appId));
-      setApplications(applications.filter(a => a.id !== appId));
-      showToast("Record permanently deleted.");
-    } catch (error) { showToast("Failed to delete.", "error"); }
+    if (staffData.role !== "Super Admin") { showToast("Super Admins only.", "error"); return; }
+    if (!window.confirm("Permanently erase data?")) return;
+    try { await deleteDoc(doc(db, "applications", appId)); setApplications(applications.filter(a => a.id !== appId)); showToast("Permanently deleted."); } 
+    catch (error) { showToast("Failed to delete.", "error"); }
   };
 
   const handleRestore = async (appId) => {
-    try {
-      await updateDoc(doc(db, "applications", appId), { isDeleted: false });
-      setApplications(applications.map(a => a.id === appId ? { ...a, isDeleted: false } : a));
-      showToast("Application Restored!");
-    } catch (error) { showToast("Failed to restore.", "error"); }
+    try { await updateDoc(doc(db, "applications", appId), { isDeleted: false }); setApplications(applications.map(a => a.id === appId ? { ...a, isDeleted: false } : a)); showToast("Restored!"); } 
+    catch (error) { showToast("Failed to restore.", "error"); }
   };
 
-  // ─── TEAM MANAGEMENT (SUPER ADMIN ONLY) ─────────────────────────────
   const addStaffMember = async (e) => {
     e.preventDefault();
-    try {
-      const newDoc = await addDoc(collection(db, "staff"), { ...newStaff, isActive: true });
-      setStaffList([...staffList, { id: newDoc.id, ...newStaff, isActive: true }]);
-      setNewStaff({ name: "", email: "", role: "User", employeeId: "" });
-      showToast("Staff member added successfully!");
-    } catch (error) { showToast("Failed to add staff.", "error"); }
+    try { const newDoc = await addDoc(collection(db, "staff"), { ...newStaff, isActive: true }); setStaffList([...staffList, { id: newDoc.id, ...newStaff, isActive: true }]); setNewStaff({ name: "", email: "", role: "User", employeeId: "" }); showToast("Staff added!"); } 
+    catch (error) { showToast("Failed to add staff.", "error"); }
   };
 
   const removeStaffMember = async (staffId) => {
-    if (!window.confirm("Remove this staff member's access?")) return;
-    try {
-      await deleteDoc(doc(db, "staff", staffId));
-      setStaffList(staffList.filter(s => s.id !== staffId));
-      showToast("Staff access revoked.");
-    } catch (error) { showToast("Failed to remove staff.", "error"); }
+    if (!window.confirm("Revoke access?")) return;
+    try { await deleteDoc(doc(db, "staff", staffId)); setStaffList(staffList.filter(s => s.id !== staffId)); showToast("Access revoked."); } 
+    catch (error) { showToast("Failed to remove staff.", "error"); }
   };
 
-
-  // ─── EMAILS & EXPORT ────────────────────────────────────────────────
+  // ─── EMAILS WITH ALL TAGS ───────────────────────────────────────────
   const sendIndividualEmail = (app, isWelcome = false) => {
     let bodyText = isWelcome ? templates.Welcome : (templates[app.status || "Pending"] || templates.Bulk);
-    bodyText = bodyText.replace(/\[Name\]/g, app.name)
-                       .replace(/\[ID\]/g, app.applicationId)
+    
+    bodyText = bodyText.replace(/\[Name\]/g, app.name || "Candidate")
+                       .replace(/\[ID\]/g, app.applicationId || "N/A")
                        .replace(/\[Brand\]/g, app.brand || "our company")
-                       .replace(/\[Phone\]/g, app.phone)
-                       .replace(/\[Email\]/g, app.email)
+                       .replace(/\[Gender\]/g, app.gender || "N/A")
+                       .replace(/\[Phone\]/g, app.phone || "N/A")
+                       .replace(/\[AltPhone\]/g, app.altPhone || "None")
+                       .replace(/\[University\]/g, app.university || "N/A")
+                       .replace(/\[College\]/g, app.college || "N/A")
+                       .replace(/\[Stream\]/g, app.stream || "N/A")
+                       .replace(/\[Major\]/g, app.major || "N/A")
+                       .replace(/\[Batch\]/g, app.batch || "N/A")
+                       .replace(/\[Year\]/g, app.year || "N/A")
+                       .replace(/\[Duration\]/g, app.duration || "N/A")
+                       .replace(/\[LinkedIn\]/g, app.linkedin || "Not Provided")
+                       .replace(/\[Portfolio\]/g, app.portfolio || "Not Provided")
                        .replace(/\[Resume\]/g, app.resumeUrl || "Not Attached");
 
     const subject = encodeURIComponent(isWelcome ? `Application Received: ${app.applicationId}` : `Update on your Application: ${app.applicationId}`);
@@ -224,11 +179,41 @@ export default function Admin() {
     window.location.href = `mailto:?bcc=${selectedEmails}&subject=${subject}&body=${body}`;
   };
 
+  // ─── RESTORED MISSING FUNCTIONS: EXPORT, ZIP, AND DUPLICATES ────────
+  const exportToCSV = () => {
+    const headers = ["App ID,Date,Batch,Name,Gender,Email,Phone,University,College,Stream,Major,Year,Brand,Duration,Status"];
+    const rows = filteredApps.map(a => 
+      `"${a.applicationId}","${a.dateStr}","${a.batch}","${a.name}","${a.gender}","${a.email}","${a.phone}","${a.university}","${a.college}","${a.stream}","${a.major}","${a.year}","${a.brand}","${a.duration}","${a.status || 'Pending'}"`
+    );
+    const csvContent = "data:text/csv;charset=utf-8," + headers.concat(rows).join("\n");
+    const link = document.createElement("a");
+    link.href = encodeURI(csvContent);
+    link.download = `RDS_Applications.csv`;
+    document.body.appendChild(link); link.click(); document.body.removeChild(link);
+    showToast("Excel Report Downloaded");
+  };
+
+  const downloadSelectedResumes = async () => {
+    showToast("Zipping files... Please wait.");
+    const zip = new JSZip(); const folder = zip.folder("RDS_Resumes");
+    const appsToDownload = applications.filter(app => selectedApps.includes(app.id) && app.resumeUrl);
+    for (const app of appsToDownload) {
+      try {
+        const response = await fetch(app.resumeUrl); const blob = await response.blob();
+        folder.file(`${app.name.replace(/[^a-z0-9]/gi, '_')}_${app.applicationId}.pdf`, blob);
+      } catch (error) { console.error("Could not download", app.name); }
+    }
+    zip.generateAsync({ type: "blob" }).then(function(content) { saveAs(content, `RDS_Resumes.zip`); showToast("Download Complete!"); });
+  };
+
+  const isDuplicate = (val, field) => { 
+    if (!val) return false; 
+    return activeApplications.filter(a => a[field] === val).length > 1; 
+  };
+
   // ─── FILTERS & DATA PREP ────────────────────────────────────────────
   const activeApplications = applications.filter(a => !a.isDeleted);
   const deletedApplications = applications.filter(a => a.isDeleted);
-  
-  // Dynamic Batch List
   const availableBatches = ["All Batches", ...Array.from(new Set(activeApplications.map(a => a.batch).filter(Boolean)))];
 
   let filteredApps = activeApplications.filter(app => {
@@ -236,8 +221,11 @@ export default function Admin() {
     const matchesSearch = (app.name?.toLowerCase().includes(searchStr)) || (app.applicationId?.toLowerCase().includes(searchStr)) || (app.email?.toLowerCase().includes(searchStr)) || (app.phone?.includes(searchStr));
     const matchesBrand = filterBrand === "All Brands" || app.brand === filterBrand;
     const matchesBatch = filterBatch === "All Batches" || app.batch === filterBatch;
-    return matchesSearch && matchesBrand && matchesBatch;
+    const matchesDup = showDuplicatesOnly ? (isDuplicate(app.phone, 'phone') || isDuplicate(app.email, 'email')) : true;
+    return matchesSearch && matchesBrand && matchesBatch && matchesDup;
   });
+
+  if (showDuplicatesOnly) { filteredApps.sort((a, b) => (a.email || "").localeCompare(b.email || "")); }
 
   const handleSelectAll = (e) => { e.target.checked ? setSelectedApps(filteredApps.map(a => a.id)) : setSelectedApps([]); };
   const handleSelectOne = (id) => { selectedApps.includes(id) ? setSelectedApps(selectedApps.filter(appId => appId !== id)) : setSelectedApps([...selectedApps, id]); };
@@ -346,15 +334,22 @@ export default function Admin() {
           {/* ─── TAB: APPLICATIONS ─── */}
           {activeTab === "applications" && (
             <div className="animate-fade-in">
-              {/* FILTERS */}
-              <div className="bg-white p-4 rounded-sm shadow-sm border border-gray-200 mb-6 flex flex-wrap gap-4 items-center">
-                <input type="text" placeholder="Search ID, Name, Email..." value={search} onChange={e => setSearch(e.target.value)} className="flex-1 min-w-[200px] px-4 py-2 border border-gray-200 rounded-sm text-sm focus:border-corp-blue outline-none" />
-                <select value={filterBatch} onChange={e => setFilterBatch(e.target.value)} className="px-4 py-2 border border-gray-200 rounded-sm text-xs font-bold uppercase tracking-wider bg-gray-50 outline-none">
-                  {availableBatches.map(b => <option key={b} value={b}>{b}</option>)}
-                </select>
-                <select value={filterBrand} onChange={e => setFilterBrand(e.target.value)} className="px-4 py-2 border border-gray-200 rounded-sm text-xs font-bold uppercase tracking-wider bg-gray-50 outline-none">
-                  <option>All Brands</option><option>MyTripRaja</option><option>MarketerRaja</option>
-                </select>
+              {/* RESTORED FILTERS AND BUTTONS */}
+              <div className="bg-white p-4 rounded-sm shadow-sm border border-gray-200 mb-6 flex flex-wrap gap-4 items-center justify-between">
+                <div className="flex gap-4 flex-wrap flex-1">
+                  <input type="text" placeholder="Search ID, Name, Email..." value={search} onChange={e => setSearch(e.target.value)} className="flex-1 min-w-[200px] px-4 py-2 border border-gray-200 rounded-sm text-sm outline-none focus:border-corp-blue" />
+                  <select value={filterBatch} onChange={e => setFilterBatch(e.target.value)} className="px-4 py-2 border border-gray-200 rounded-sm text-xs font-bold uppercase tracking-wider bg-gray-50 outline-none">
+                    {availableBatches.map(b => <option key={b} value={b}>{b}</option>)}
+                  </select>
+                  <select value={filterBrand} onChange={e => setFilterBrand(e.target.value)} className="px-4 py-2 border border-gray-200 rounded-sm text-xs font-bold uppercase tracking-wider bg-gray-50 outline-none">
+                    <option>All Brands</option><option>MyTripRaja</option><option>MarketerRaja</option>
+                  </select>
+                </div>
+                
+                <div className="flex gap-2">
+                  <button onClick={() => setShowDuplicatesOnly(!showDuplicatesOnly)} className={`px-4 py-2 rounded-sm text-[10px] font-bold tracking-widest uppercase transition-colors shadow-sm border ${showDuplicatesOnly ? 'bg-orange-100 text-orange-700 border-orange-300' : 'bg-white text-gray-700 border-gray-200 hover:bg-gray-50'}`}>{showDuplicatesOnly ? "⚠️ Clear Audit" : "Audit Duplicates"}</button>
+                  <button onClick={exportToCSV} className="bg-corp-gold text-white px-4 py-2 rounded-sm text-[10px] font-bold tracking-widest uppercase hover:bg-yellow-700 shadow-sm">Export Excel</button>
+                </div>
               </div>
 
               {/* BULK ACTION BAR */}
@@ -365,6 +360,7 @@ export default function Admin() {
                     <button onClick={handleSoftDelete} className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white text-[10px] font-bold tracking-widest uppercase rounded-sm flex items-center gap-2 transition-colors">🗑️ Trash</button>
                     <button onClick={() => sendBulkEmail(true)} className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-[10px] font-bold tracking-widest uppercase rounded-sm transition-colors">✉️ Send Welcome</button>
                     <button onClick={() => sendBulkEmail(false)} className="px-4 py-2 bg-white/20 hover:bg-white/30 text-white text-[10px] font-bold tracking-widest uppercase rounded-sm transition-colors">✉️ Bulk Update</button>
+                    <button onClick={downloadSelectedResumes} className="px-4 py-2 bg-corp-gold hover:bg-yellow-600 text-white text-[10px] font-bold tracking-widest uppercase rounded-sm transition-colors">⬇️ ZIP Resumes</button>
                   </div>
                 </div>
               )}
@@ -414,8 +410,8 @@ export default function Admin() {
                         </td>
                         <td className="px-6 py-4">
                            <div className="flex flex-col gap-2">
-                              <div className="text-[10px] text-gray-600">P: {app.phone}</div>
-                              <div className="text-[10px] text-blue-600 hover:underline"><a href={`mailto:${app.email}`}>{app.email}</a></div>
+                              <div className={`text-[10px] ${isDuplicate(app.phone, 'phone') ? 'text-orange-600 font-bold' : 'text-gray-600'}`}>P: {app.phone} {isDuplicate(app.phone, 'phone') && "⚠️"}</div>
+                              <div className={`text-[10px] hover:underline ${isDuplicate(app.email, 'email') ? 'text-orange-600 font-bold' : 'text-blue-600'}`}><a href={`mailto:${app.email}`}>{app.email}</a> {isDuplicate(app.email, 'email') && "⚠️"}</div>
                               <div className="flex items-center gap-2 mt-1">
                                 {app.resumeUrl && <a href={app.resumeUrl} target="_blank" rel="noopener noreferrer" className="text-[9px] bg-red-50 text-corp-red px-2 py-0.5 rounded font-black uppercase border border-red-100">PDF</a>}
                                 {/* AUDIT LOG VIEW */}
