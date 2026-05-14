@@ -477,7 +477,7 @@ export default function App() {
   return (
     <div className="font-body antialiased relative">
       <Background />
-      <Navbar view={view} navigateTo={navigateTo} />
+      {!["admin", "employee", "director"].includes(view) && <Navbar view={view} navigateTo={navigateTo} />}
       
       {view === "home" && (
         <>
