@@ -29,9 +29,18 @@ export default function EmployeePortal() {
         const q = query(collection(db, "staff"), where("email", "==", currentUser.email), where("isActive", "==", true));
         const snap = await getDocs(q);
         if (!snap.empty) {
-          setStaffData({ id: snap.docs[0].id, ...snap.docs[0].data() });
+          const profile = snap.docs[0].data();
+
+          // 🚨 STRICT GATE: Block Admins & Directors from the Employee Portal
+          if (profile.role !== "User") {
+            signOut(auth);
+            alert("NOTICE: You are an Admin/Director. Please use the /admin or /director portals. This workspace is for standard employees only.");
+            return;
+          }
+
+          setStaffData({ id: snap.docs[0].id, ...profile });
           setUser(currentUser);
-          fetchAllData(currentUser.email); // Pass email to fetch ONLY their data
+          fetchAllData(currentUser.email); 
         } else {
           signOut(auth); setUser(null); setStaffData(null);
           alert("Access Denied: You are not registered in the Employee Directory.");
