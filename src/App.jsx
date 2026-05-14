@@ -8,6 +8,8 @@ import ResumeUpload from "./ResumeUpload";
 import InternshipPage from "./InternshipPage";
 import InternshipTerms from "./InternshipTerms";     
 import InternshipPrivacy from "./InternshipPrivacy";
+import EmployeePortal from "./EmployeePortal";
+import DirectorPortal from "./DirectorPortal";
 
 // ─── Utility ─────────────────────────────────────────────────────────────────
 function useInView(threshold = 0.15) {
@@ -491,6 +493,8 @@ export default function App() {
       {view === "internship-terms" && <InternshipTerms />}     
       {view === "internship-privacy" && <InternshipPrivacy />}
       {view === "about-more" && <AboutMorePage />}
+      {view === "employee" && <EmployeePortal />}
+      {view === "director" && <DirectorPortal />}
       {view.startsWith("director-") && <DirectorPage id={view.replace("director-", "")} />}
       {["privacy", "terms", "disclaimer"].includes(view) && (
         <LegalPage title={view === "privacy" ? "Privacy Policy" : view === "terms" ? "Terms of Service" : "Disclaimer"} content={legalContent[view]} />
