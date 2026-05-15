@@ -55,33 +55,33 @@ export default function Admin() {
   };
 
   // ─── AUTHENTICATION & DATA FETCHING ─────────────────────────────────
- useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
-      if (currentUser) {
-        const q = query(collection(db, "staff"), where("email", "==", currentUser.email), where("isActive", "==", true));
-        const snap = await getDocs(q);
-        if (!snap.empty) {
-          const profile = snap.docs[0].data();
-          
-          // 🚨 STRICT GATE: Block Standard Employees from the HR Portal
-          if (profile.role === "User") {
-            signOut(auth);
-            alert("SECURITY BREACH: Standard Employees cannot access the HR Enterprise Panel.");
-            return;
-          }
+useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
+      if (currentUser) {
+        const q = query(collection(db, "staff"), where("email", "==", currentUser.email), where("isActive", "==", true));
+        const snap = await getDocs(q);
+        if (!snap.empty) {
+          const profile = snap.docs[0].data();
+          
+          // 🚨 FIX: Redirect instead of Sign Out
+          if (profile.role === "User") {
+            alert("Standard Employees cannot access the HR Panel. Redirecting to Employee Workspace...");
+            window.location.href = "/employee";
+            return;
+          }
 
-          setStaffData({ id: snap.docs[0].id, ...profile });
-          setUser(currentUser);
-          fetchAllData();
-        } else {
-          signOut(auth); setUser(null); setStaffData(null);
-          alert("Access Denied: Your email is not registered as active HR Staff.");
-        }
-      } else { setUser(null); setStaffData(null); }
-      setLoadingAuth(false);
-    });
-    return () => unsubscribe();
-  }, []);
+          setStaffData({ id: snap.docs[0].id, ...profile });
+          setUser(currentUser);
+          fetchAllData();
+        } else {
+          signOut(auth); setUser(null); setStaffData(null);
+          alert("Access Denied: Your email is not registered as active HR Staff.");
+        }
+      } else { setUser(null); setStaffData(null); }
+      setLoadingAuth(false);
+    });
+    return () => unsubscribe();
+  }, []);
 
   const fetchAllData = async (role) => {
     setLoadingData(true);
