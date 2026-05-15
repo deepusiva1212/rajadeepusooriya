@@ -30,15 +30,20 @@ export default function DirectorPortal() {
         const snap = await getDocs(q);
         if (!snap.empty) {
           const profile = snap.docs[0].data();
+          
+          // 🚨 FIX: Redirect instead of Sign Out
           if (profile.role !== "Super Admin") {
-            signOut(auth);
-            alert("SECURITY BREACH: This portal is strictly for Directors / Super Admins.");
+            alert("SECURITY BREACH: Redirecting to your assigned workspace...");
+            window.location.href = profile.role === "Admin" ? "/admin" : "/employee";
             return;
           }
+
           setStaffData({ id: snap.docs[0].id, ...profile });
           setUser(currentUser);
           fetchAllData();
-        } else { signOut(auth); }
+        } else { 
+          signOut(auth); setUser(null); setStaffData(null);
+        }
       } else { setUser(null); setStaffData(null); }
       setLoadingAuth(false);
     });
