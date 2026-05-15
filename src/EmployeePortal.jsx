@@ -31,10 +31,10 @@ export default function EmployeePortal() {
         if (!snap.empty) {
           const profile = snap.docs[0].data();
 
-          // 🚨 STRICT GATE: Block Admins & Directors from the Employee Portal
+          // 🚨 FIX: Redirect instead of Sign Out
           if (profile.role !== "User") {
-            signOut(auth);
-            alert("NOTICE: You are an Admin/Director. Please use the /admin or /director portals. This workspace is for standard employees only.");
+            alert("You are an Admin/Director. Redirecting to your Master Workspace...");
+            window.location.href = profile.role === "Super Admin" ? "/director" : "/admin";
             return;
           }
 
