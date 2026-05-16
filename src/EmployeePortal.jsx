@@ -2,6 +2,8 @@ import { useState, useEffect } from "react";
 import { auth, provider, db } from "./firebase";
 import { signInWithPopup, signOut, onAuthStateChanged } from "firebase/auth";
 import { collection, getDocs, query, doc, updateDoc, where, addDoc, serverTimestamp } from "firebase/firestore";
+import NewsFeed from "./NewsFeed";
+import FeedbackSystem from "./FeedbackSystem";
 
 export default function EmployeePortal() {
   const [user, setUser] = useState(null);
@@ -135,6 +137,8 @@ export default function EmployeePortal() {
           <button onClick={() => setActiveTab("my-tasks")} className={`text-left px-4 py-3 rounded-sm text-sm font-bold transition-colors flex items-center justify-between ${activeTab === "my-tasks" ? "bg-white/10 text-white" : "text-gray-400 hover:text-white"}`}>✅ My Tasks {tasks.filter(t => t.status === 'Pending').length > 0 && <span className="bg-red-500 text-white text-[9px] px-2 py-0.5 rounded-full">{tasks.filter(t => t.status === 'Pending').length}</span>}</button>
           <button onClick={() => setActiveTab("my-leaves")} className={`text-left px-4 py-3 rounded-sm text-sm font-bold transition-colors ${activeTab === "my-leaves" ? "bg-white/10 text-white" : "text-gray-400 hover:text-white"}`}>📅 Request Leave</button>
           <button onClick={() => setActiveTab("profile")} className={`text-left px-4 py-3 rounded-sm text-sm font-bold transition-colors ${activeTab === "profile" ? "bg-white/10 text-white" : "text-gray-400 hover:text-white"}`}>👤 My Profile</button>
+          <button onClick={() => setActiveTab("news")} className={`text-left px-4 py-3 rounded-sm text-sm font-bold transition-colors ${activeTab === "news" ? "bg-white/10 text-white" : "text-gray-400 hover:text-white"}`}>📰 Company News</button>
+          <button onClick={() => setActiveTab("feedback")} className={`text-left px-4 py-3 rounded-sm text-sm font-bold transition-colors ${activeTab === "feedback" ? "bg-white/10 text-white" : "text-gray-400 hover:text-white"}`}>💡 Feedback Box</button> 
         </div>
         <div className="p-6 border-t border-white/10 bg-white/5 shrink-0">
           <div className="flex items-center gap-3 mb-4">
@@ -197,6 +201,9 @@ export default function EmployeePortal() {
             </div>
           </div>
         )}
+
+        {activeTab === "news" && <NewsFeed role={staffData.role} userName={staffData.name} />}
+        {activeTab === "feedback" && <FeedbackSystem role={staffData.role} userEmail={staffData.email} userName={staffData.name} />}
 
         {/* MY TASKS */}
         {activeTab === "my-tasks" && (
