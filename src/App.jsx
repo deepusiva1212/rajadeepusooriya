@@ -500,7 +500,7 @@ export default function App() {
         <LegalPage title={view === "privacy" ? "Privacy Policy" : view === "terms" ? "Terms of Service" : "Disclaimer"} content={legalContent[view]} />
       )}
 
-      <Footer navigateTo={navigateTo} />
+      {!["admin", "employee", "director"].includes(view) && <Footer />}
       <WhatsAppButton />
     </div>
   );
