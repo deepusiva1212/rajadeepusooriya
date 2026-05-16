@@ -4,6 +4,11 @@ import { signInWithPopup, signOut, onAuthStateChanged } from "firebase/auth";
 import { collection, getDocs, query, doc, updateDoc, where, addDoc, serverTimestamp } from "firebase/firestore";
 import NewsFeed from "./NewsFeed";
 import FeedbackSystem from "./FeedbackSystem";
+import LearningHub from "./LearningHub";
+import PrivateNotepad from "./PrivateNotepad";
+import AttendanceTracker from "./AttendanceTracker";
+import CompanyCulture from "./CompanyCulture";
+import PolicySignatures from "./PolicySignatures";
 
 export default function EmployeePortal() {
   const [user, setUser] = useState(null);
@@ -139,6 +144,11 @@ export default function EmployeePortal() {
           <button onClick={() => setActiveTab("profile")} className={`text-left px-4 py-3 rounded-sm text-sm font-bold transition-colors ${activeTab === "profile" ? "bg-white/10 text-white" : "text-gray-400 hover:text-white"}`}>👤 My Profile</button>
           <button onClick={() => setActiveTab("news")} className={`text-left px-4 py-3 rounded-sm text-sm font-bold transition-colors ${activeTab === "news" ? "bg-white/10 text-white" : "text-gray-400 hover:text-white"}`}>📰 Company News</button>
           <button onClick={() => setActiveTab("feedback")} className={`text-left px-4 py-3 rounded-sm text-sm font-bold transition-colors ${activeTab === "feedback" ? "bg-white/10 text-white" : "text-gray-400 hover:text-white"}`}>💡 Feedback Box</button> 
+          <button onClick={() => setActiveTab("learning")} className={`text-left px-4 py-3 rounded-sm text-sm font-bold transition-colors ${activeTab === "learning" ? "bg-white/10 text-white" : "text-gray-400 hover:text-white"}`}>🎓 Learning Hub</button>
+          <button onClick={() => setActiveTab("notepad")} className={`text-left px-4 py-3 rounded-sm text-sm font-bold transition-colors ${activeTab === "notepad" ? "bg-white/10 text-white" : "text-gray-400 hover:text-white"}`}>📝 Private Notepad</button>
+          <button onClick={() => setActiveTab("attendance")} className={`text-left px-4 py-3 rounded-sm text-sm font-bold transition-colors ${activeTab === "attendance" ? "bg-white/10 text-white" : "text-gray-400 hover:text-white"}`}>⏱️ Time & Location</button>
+          <button onClick={() => setActiveTab("culture")} className={`text-left px-4 py-3 rounded-sm text-sm font-bold transition-colors ${activeTab === "culture" ? "bg-white/10 text-white" : "text-gray-400 hover:text-white"}`}>🔥 Pulse & Kudos</button>
+          <button onClick={() => setActiveTab("policies")} className={`text-left px-4 py-3 rounded-sm text-sm font-bold transition-colors ${activeTab === "policies" ? "bg-white/10 text-white" : "text-gray-400 hover:text-white"}`}>✍️ Handbooks</button>
         </div>
         <div className="p-6 border-t border-white/10 bg-white/5 shrink-0">
           <div className="flex items-center gap-3 mb-4">
@@ -204,6 +214,11 @@ export default function EmployeePortal() {
 
         {activeTab === "news" && <NewsFeed role={staffData.role} userName={staffData.name} />}
         {activeTab === "feedback" && <FeedbackSystem role={staffData.role} userEmail={staffData.email} userName={staffData.name} />}
+        {activeTab === "learning" && <LearningHub role={staffData.role} />}
+        {activeTab === "notepad" && <PrivateNotepad userEmail={staffData.email} />}
+        {activeTab === "attendance" && <AttendanceTracker userEmail={staffData.email} userName={staffData.name} role={staffData.role} />}
+        {activeTab === "culture" && <CompanyCulture userName={staffData.name} />}
+        {activeTab === "policies" && <PolicySignatures userName={staffData.name} role={staffData.role} />}
 
         {/* MY TASKS */}
         {activeTab === "my-tasks" && (
