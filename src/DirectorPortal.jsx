@@ -12,6 +12,10 @@ import PolicySignatures from "./PolicySignatures";
 import SocialHub from "./SocialHub";
 import OperationsHub from "./OperationsHub";
 import HRAnalytics from "./HRAnalytics"; // (Only needed in DirectorPortal)
+import ITHub from "./ITHub";
+import PerformanceOKRs from "./PerformanceOKRs";
+import SafetyDirectory from "./SafetyDirectory";
+import MyCalendar from "./MyCalendar";
 
 export default function DirectorPortal() {
   const [user, setUser] = useState(null);
@@ -167,8 +171,11 @@ export default function DirectorPortal() {
           <button onClick={() => setActiveTab("culture")} className={`text-left px-4 py-3 rounded-sm text-sm font-bold transition-colors ${activeTab === "culture" ? "bg-white/10 text-white" : "text-gray-400 hover:text-white"}`}>🔥 Pulse & Kudos</button>
           <button onClick={() => setActiveTab("policies")} className={`text-left px-4 py-3 rounded-sm text-sm font-bold transition-colors ${activeTab === "policies" ? "bg-white/10 text-white" : "text-gray-400 hover:text-white"}`}>✍️ Handbooks</button>
           <button onClick={() => setActiveTab("social")} className={`text-left px-4 py-3 rounded-sm text-sm font-bold transition-colors ${activeTab === "social" ? "bg-white/10 text-white" : "text-gray-400 hover:text-white"}`}>🤝 Clubs & Mentors</button>
-         <button onClick={() => setActiveTab("operations")} className={`text-left px-4 py-3 rounded-sm text-sm font-bold transition-colors ${activeTab === "operations" ? "bg-white/10 text-white" : "text-gray-400 hover:text-white"}`}>⚡ Operations Hub</button>
-
+          <button onClick={() => setActiveTab("operations")} className={`text-left px-4 py-3 rounded-sm text-sm font-bold transition-colors ${activeTab === "operations" ? "bg-white/10 text-white" : "text-gray-400 hover:text-white"}`}>⚡ Operations Hub</button>
+          <button onClick={() => setActiveTab("calendar")} className={`text-left px-4 py-3 rounded-sm text-sm font-bold transition-colors ${activeTab === "calendar" ? "bg-white/10 text-white" : "text-gray-400 hover:text-white"}`}>📅 My Calendar</button>
+          <button onClick={() => setActiveTab("performance")} className={`text-left px-4 py-3 rounded-sm text-sm font-bold transition-colors ${activeTab === "performance" ? "bg-white/10 text-white" : "text-gray-400 hover:text-white"}`}>🎯 Goals & OKRs</button>
+          <button onClick={() => setActiveTab("ithub")} className={`text-left px-4 py-3 rounded-sm text-sm font-bold transition-colors ${activeTab === "ithub" ? "bg-white/10 text-white" : "text-gray-400 hover:text-white"}`}>💻 IT Helpdesk</button>
+          <button onClick={() => setActiveTab("safety")} className={`text-left px-4 py-3 rounded-sm text-sm font-bold transition-colors ${activeTab === "safety" ? "bg-red-500/20 text-red-400" : "text-gray-400 hover:text-red-400"}`}>🚑 Safety & First Aid</button>
 
 {staffData?.role === "Super Admin" && (
   <button onClick={() => setActiveTab("analytics")} className={`text-left px-4 py-3 rounded-sm text-sm font-bold transition-colors ${activeTab === "analytics" ? "bg-white/10 text-corp-gold" : "text-gray-400 hover:text-white"}`}>📈 HR Analytics</button>
@@ -202,6 +209,10 @@ export default function DirectorPortal() {
         {activeTab === "social" && <SocialHub userName={staffData.name} userEmail={staffData.email} />}
         {activeTab === "operations" && <OperationsHub role={staffData.role} userName={staffData.name} />}
         {activeTab === "analytics" && <HRAnalytics role={staffData.role} />}
+        {activeTab === "calendar" && <MyCalendar userEmail={staffData.email} userName={staffData.name} />}
+        {activeTab === "performance" && <PerformanceOKRs role={staffData.role} userName={staffData.name} />}
+        {activeTab === "ithub" && <ITHub role={staffData.role} userName={staffData.name} />}
+        {activeTab === "safety" && <SafetyDirectory role={staffData.role} />}
         
         {activeTab === "delegate-tasks" && (
           <div className="animate-fade-in grid lg:grid-cols-3 gap-8">
