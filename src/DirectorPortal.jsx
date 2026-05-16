@@ -2,6 +2,8 @@ import { useState, useEffect } from "react";
 import { auth, provider, db } from "./firebase";
 import { signInWithPopup, signOut, onAuthStateChanged } from "firebase/auth";
 import { collection, getDocs, query, orderBy, doc, updateDoc, deleteDoc, where, addDoc, serverTimestamp } from "firebase/firestore";
+import NewsFeed from "./NewsFeed";
+import FeedbackSystem from "./FeedbackSystem";
 
 export default function DirectorPortal() {
   const [user, setUser] = useState(null);
@@ -149,6 +151,8 @@ export default function DirectorPortal() {
           <button onClick={() => setActiveTab("delegate-tasks")} className={`text-left px-4 py-3 rounded-sm text-sm font-bold transition-colors ${activeTab === "delegate-tasks" ? "bg-white/10 text-corp-gold" : "text-gray-400 hover:text-white"}`}>📝 Delegate Work</button>
           <button onClick={() => setActiveTab("leave-approvals")} className={`text-left px-4 py-3 rounded-sm text-sm font-bold transition-colors flex justify-between ${activeTab === "leave-approvals" ? "bg-white/10 text-corp-gold" : "text-gray-400 hover:text-white"}`}>⚖️ Leave Approvals {leaves.filter(l => l.status === 'Pending').length > 0 && <span className="bg-red-500 text-white text-[9px] px-2 py-0.5 rounded-full">{leaves.filter(l => l.status === 'Pending').length}</span>}</button>
           <button onClick={() => setActiveTab("manage-team")} className={`text-left px-4 py-3 rounded-sm text-sm font-bold transition-colors ${activeTab === "manage-team" ? "bg-white/10 text-corp-gold" : "text-gray-400 hover:text-white"}`}>👥 Team Roster</button>
+          <button onClick={() => setActiveTab("news")} className={`text-left px-4 py-3 rounded-sm text-sm font-bold transition-colors ${activeTab === "news" ? "bg-white/10 text-corp-gold" : "text-gray-400 hover:text-white"}`}>📰 Manage News</button>
+          <button onClick={() => setActiveTab("feedback")} className={`text-left px-4 py-3 rounded-sm text-sm font-bold transition-colors ${activeTab === "feedback" ? "bg-white/10 text-corp-gold" : "text-gray-400 hover:text-white"}`}>💡 Read Feedback</button>
         </div>
         <div className="p-6 border-t border-white/10 shrink-0">
           <div className="flex items-center gap-3 mb-4">
@@ -167,6 +171,9 @@ export default function DirectorPortal() {
       </aside>
 
       <main className="flex-1 h-screen overflow-y-auto p-8">
+
+        {activeTab === "news" && <NewsFeed role={staffData.role} userName={staffData.name} />}
+        {activeTab === "feedback" && <FeedbackSystem role={staffData.role} userEmail={staffData.email} userName={staffData.name} />}
         
         {activeTab === "delegate-tasks" && (
           <div className="animate-fade-in grid lg:grid-cols-3 gap-8">
