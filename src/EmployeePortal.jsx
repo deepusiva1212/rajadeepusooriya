@@ -15,6 +15,9 @@ import ITHub from "./ITHub";
 import PerformanceOKRs from "./PerformanceOKRs";
 import SafetyDirectory from "./SafetyDirectory";
 import MyCalendar from "./MyCalendar";
+import Timesheets from "./Timesheets";
+import OnCallRoster from "./OnCallRoster";
+import ComplianceAdmin from "./ComplianceAdmin";
 
 export default function EmployeePortal() {
   const [user, setUser] = useState(null);
@@ -161,6 +164,9 @@ export default function EmployeePortal() {
           <button onClick={() => setActiveTab("performance")} className={`text-left px-4 py-3 rounded-sm text-sm font-bold transition-colors ${activeTab === "performance" ? "bg-white/10 text-white" : "text-gray-400 hover:text-white"}`}>🎯 Goals & OKRs</button>
           <button onClick={() => setActiveTab("ithub")} className={`text-left px-4 py-3 rounded-sm text-sm font-bold transition-colors ${activeTab === "ithub" ? "bg-white/10 text-white" : "text-gray-400 hover:text-white"}`}>💻 IT Helpdesk</button>
           <button onClick={() => setActiveTab("safety")} className={`text-left px-4 py-3 rounded-sm text-sm font-bold transition-colors ${activeTab === "safety" ? "bg-red-500/20 text-red-400" : "text-gray-400 hover:text-red-400"}`}>🚑 Safety & First Aid</button>
+          <button onClick={() => setActiveTab("timesheets")} className={`text-left px-4 py-3 rounded-sm text-sm font-bold transition-colors ${activeTab === "timesheets" ? "bg-white/10 text-white" : "text-gray-400 hover:text-white"}`}>⏱️ Timesheets & Breaks</button>
+          <button onClick={() => setActiveTab("oncall")} className={`text-left px-4 py-3 rounded-sm text-sm font-bold transition-colors ${activeTab === "oncall" ? "bg-white/10 text-white" : "text-gray-400 hover:text-white"}`}>🌙 On-Call Roster</button>
+          <button onClick={() => setActiveTab("compliance")} className={`text-left px-4 py-3 rounded-sm text-sm font-bold transition-colors ${activeTab === "compliance" ? "bg-red-500/20 text-red-400" : "text-gray-400 hover:text-red-400"}`}>⚖️ Legal & Handover</button>
         </div>
         <div className="p-6 border-t border-white/10 bg-white/5 shrink-0">
           <div className="flex items-center gap-3 mb-4">
@@ -238,6 +244,9 @@ export default function EmployeePortal() {
         {activeTab === "performance" && <PerformanceOKRs role={staffData.role} userName={staffData.name} />}
         {activeTab === "ithub" && <ITHub role={staffData.role} userName={staffData.name} />}
         {activeTab === "safety" && <SafetyDirectory role={staffData.role} />}
+        {activeTab === "timesheets" && <Timesheets role={staffData.role} userName={staffData.name} userEmail={staffData.email} />}
+        {activeTab === "oncall" && <OnCallRoster role={staffData.role} />}
+        {activeTab === "compliance" && <ComplianceAdmin role={staffData.role} userName={staffData.name} />}
 
         {/* MY TASKS */}
         {activeTab === "my-tasks" && (
