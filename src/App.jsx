@@ -12,6 +12,8 @@ import EmployeePortal from "./EmployeePortal";
 import DirectorPortal from "./DirectorPortal";
 import PageTransitionBar from "./PageTransitionBar";
 import Blog from "./Blog";
+import Testimonials from "./Testimonials";
+// Render it: <Testimonials />
 
 // ─── Utility ─────────────────────────────────────────────────────────────────
 function useInView(threshold = 0.15) {
