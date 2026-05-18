@@ -22,6 +22,8 @@ import OnCallRoster from "./OnCallRoster";
 import BrandAssets from "./BrandAssets";
 import MyTasks from "./MyTasks";
 import IDCardButton from "./IDCardButton";
+import WeeklyReports from "./WeeklyReports";
+import OnboardingChecklist from "./OnboardingChecklist";
 
 export default function EmployeePortal() {
   const [user, setUser] = useState(null);
@@ -212,6 +214,8 @@ export default function EmployeePortal() {
           <button onClick={() => {setActiveTab("learning"); setIsSidebarOpen(false);}} className={`text-left px-6 py-2.5 text-sm font-semibold transition-all flex items-center gap-3 ${activeTab === "learning" ? "bg-blue-500/10 text-blue-400 border-r-2 border-blue-500" : "hover:bg-slate-800/50 hover:text-white"}`}><span className="text-lg">🎓</span> Learning Hub</button>
           <button onClick={() => {setActiveTab("performance"); setIsSidebarOpen(false);}} className={`text-left px-6 py-2.5 text-sm font-semibold transition-all flex items-center gap-3 ${activeTab === "performance" ? "bg-blue-500/10 text-blue-400 border-r-2 border-blue-500" : "hover:bg-slate-800/50 hover:text-white"}`}><span className="text-lg">🎯</span> Goals & OKRs</button>
           <button onClick={() => {setActiveTab("policies"); setIsSidebarOpen(false);}} className={`text-left px-6 py-2.5 text-sm font-semibold transition-all flex items-center gap-3 ${activeTab === "policies" ? "bg-blue-500/10 text-blue-400 border-r-2 border-blue-500" : "hover:bg-slate-800/50 hover:text-white"}`}><span className="text-lg">✍️</span> Handbooks</button>
+          <button onClick={() => {setActiveTab("weekly-reports"); setIsSidebarOpen(false);}} className={`text-left px-6 py-2.5 text-sm font-semibold transition-all flex items-center gap-3 ${activeTab === "weekly-reports" ? "bg-blue-500/10 text-blue-400 border-r-2 border-blue-500" : "hover:bg-slate-800/50 hover:text-white"}`}><span className="text-lg">📈</span> Weekly Reports</button>
+          <button onClick={() => {setActiveTab("onboarding"); setIsSidebarOpen(false);}} className={`text-left px-6 py-2.5 text-sm font-semibold transition-all flex items-center gap-3 ${activeTab === "onboarding" ? "bg-blue-500/10 text-blue-400 border-r-2 border-blue-500" : "hover:bg-slate-800/50 hover:text-white"}`}><span className="text-lg">🚀</span> Onboarding</button>
           
           <div className="text-[10px] font-black text-slate-500 tracking-widest uppercase mt-6 mb-2 px-6">Safety</div>
           <button onClick={() => {setActiveTab("safety"); setIsSidebarOpen(false);}} className={`text-left px-6 py-2.5 text-sm font-semibold transition-all flex items-center gap-3 ${activeTab === "safety" ? "bg-red-500/10 text-red-400 border-r-2 border-red-500" : "hover:bg-slate-800/50 hover:text-red-400"}`}><span className="text-lg">🚑</span> First Responders</button>
@@ -356,6 +360,8 @@ export default function EmployeePortal() {
           {activeTab === "timesheets" && <Timesheets role={staffData.role} userName={staffData.name} userEmail={staffData.email} />}
           {activeTab === "oncall" && <OnCallRoster role={staffData.role} />}
           {activeTab === "brand-assets" && <BrandAssets />}
+          {activeTab === "weekly-reports" && <WeeklyReports userName={staffData.name} userEmail={staffData.email} role={staffData.role} />}
+          {activeTab === "onboarding" && <OnboardingChecklist userEmail={staffData.email} />}
 
         </div>
       </main>
