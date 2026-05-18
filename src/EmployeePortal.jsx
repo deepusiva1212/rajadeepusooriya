@@ -24,6 +24,7 @@ import MyTasks from "./MyTasks";
 import IDCardButton from "./IDCardButton";
 import WeeklyReports from "./WeeklyReports";
 import OnboardingChecklist from "./OnboardingChecklist";
+import ChatWidget from "./ChatWidget";
 
 export default function EmployeePortal() {
   const [user, setUser] = useState(null);
@@ -365,6 +366,7 @@ export default function EmployeePortal() {
 
         </div>
       </main>
+      <ChatWidget userName={staffData.name} userEmail={staffData.email} />
     </div>
   );
 }
