@@ -21,6 +21,7 @@ import OnCallRoster from "./OnCallRoster";
 import ComplianceAdmin from "./ComplianceAdmin";
 import AdminAnalytics from "./AdminAnalytics";
 import Blog from "./Blog";
+import BroadcastManager from "./BroadcastManager";
 
 export default function DirectorPortal() {
   const [user, setUser] = useState(null);
@@ -186,6 +187,7 @@ export default function DirectorPortal() {
           <button onClick={() => setActiveTab("compliance")} className={`text-left px-4 py-3 rounded-sm text-sm font-bold transition-colors ${activeTab === "compliance" ? "bg-red-500/20 text-red-400" : "text-gray-400 hover:text-red-400"}`}>⚖️ Legal & Handover</button>
           <button onClick={() => setActiveTab("analytics")} className={`text-left px-4 py-3 rounded-sm text-sm font-bold transition-colors ${activeTab === "analytics" ? "bg-white/10 text-corp-gold border-r-2 border-corp-gold" : "text-gray-400 hover:text-white"}`}>📈 Enterprise Analytics</button>
           <button onClick={() => setActiveTab("manage-blog")} className={`text-left px-4 py-3 rounded-sm text-sm font-bold transition-colors ${activeTab === "manage-blog" ? "bg-white/10 text-corp-gold border-r-2 border-corp-gold" : "text-gray-400 hover:text-white"}`}>📰 Manage Blog Feed</button>
+          <button onClick={() => setActiveTab("broadcast")} ...>📢 Emergency Broadcast</button>
 
 {staffData?.role === "Super Admin" && (
   <button onClick={() => setActiveTab("analytics")} className={`text-left px-4 py-3 rounded-sm text-sm font-bold transition-colors ${activeTab === "analytics" ? "bg-white/10 text-corp-gold" : "text-gray-400 hover:text-white"}`}>📈 HR Analytics</button>
@@ -228,6 +230,7 @@ export default function DirectorPortal() {
         {activeTab === "compliance" && <ComplianceAdmin role={staffData.role} userName={staffData.name} />}
         {activeTab === "analytics" && <AdminAnalytics />}
         {activeTab === "manage-blog" && <Blog isDashboardMode={true} role={staffData.role} />}
+        {activeTab === "broadcast" && <BroadcastManager userName={staffData.name} />}
         
         {activeTab === "delegate-tasks" && (
           <div className="animate-fade-in grid lg:grid-cols-3 gap-8">
