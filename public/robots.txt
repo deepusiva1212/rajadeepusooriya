@@ -1,1 +1,57 @@
+# ═══════════════════════════════════════════════════════════════
+# robots.txt — Raja Deepu Sooriya Private Limited
+# https://www.rajadeepusooriya.com/
+# ═══════════════════════════════════════════════════════════════
 
+# ── Allow all well-behaved crawlers ────────────────────────────
+User-agent: *
+Allow: /
+
+# ── Block private portals (not for public indexing) ────────────
+Disallow: /admin
+Disallow: /employee
+Disallow: /director
+Disallow: /admin/
+Disallow: /employee/
+Disallow: /director/
+
+# ── Block crawling of query strings / search results ───────────
+Disallow: /*?*
+
+# ── Block static asset folders (no SEO value) ──────────────────
+Disallow: /src/
+Disallow: /*.jsx$
+Disallow: /*.js.map$
+
+# ── Crawl delay (polite rate — 1 request per second) ───────────
+Crawl-delay: 1
+
+# ── Google-specific: allow full access ─────────────────────────
+User-agent: Googlebot
+Allow: /
+Disallow: /admin
+Disallow: /employee
+Disallow: /director
+
+# ── Bing ───────────────────────────────────────────────────────
+User-agent: Bingbot
+Allow: /
+Disallow: /admin
+Disallow: /employee
+Disallow: /director
+
+# ── Block AI training scrapers (optional — add/remove as needed)
+User-agent: GPTBot
+Disallow: /
+
+User-agent: Google-Extended
+Disallow: /
+
+User-agent: CCBot
+Disallow: /
+
+User-agent: anthropic-ai
+Disallow: /
+
+# ── Sitemap location ───────────────────────────────────────────
+Sitemap: https://www.rajadeepusooriya.com/sitemap.xml

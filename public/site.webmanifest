@@ -1,0 +1,16 @@
+{
+  "name": "Raja Deepu Sooriya Private Limited",
+  "short_name": "RDS Pvt Ltd",
+  "description": "DPIIT Recognised Startup — MyTripRaja & MarketerRaja. Sankagiri, Tamil Nadu.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#051324",
+  "theme_color": "#C8102E",
+  "lang": "en-IN",
+  "icons": [
+    { "src": "/android-chrome-192x192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/android-chrome-512x512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "/android-chrome-512x512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "categories": ["business", "finance"]
+}

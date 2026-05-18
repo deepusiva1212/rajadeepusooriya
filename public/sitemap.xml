@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset
+  xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:image="http://www.google.com/schemas/sitemap-image/1.1"
+  xsi:schemaLocation="
+    http://www.sitemaps.org/schemas/sitemap/0.9
+    http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd">
+
+  <!-- ═══════════════════════════════════════════════════
+       HOMEPAGE
+  ═══════════════════════════════════════════════════ -->
+  <url>
+    <loc>https://www.rajadeepusooriya.com/</loc>
+    <lastmod>2025-05-18</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+    <image:image>
+      <image:loc>https://www.rajadeepusooriya.com/og-image.png</image:loc>
+      <image:title>Raja Deepu Sooriya Private Limited — DPIIT Recognised Startup</image:title>
+      <image:caption>Official homepage of Raja Deepu Sooriya Private Limited, Sankagiri, Tamil Nadu</image:caption>
+    </image:image>
+  </url>
+
+  <!-- ═══════════════════════════════════════════════════
+       INTERNSHIPS
+  ═══════════════════════════════════════════════════ -->
+  <url>
+    <loc>https://www.rajadeepusooriya.com/internships</loc>
+    <lastmod>2025-05-18</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
+
+  <!-- ═══════════════════════════════════════════════════
+       ABOUT MORE
+  ═══════════════════════════════════════════════════ -->
+  <url>
+    <loc>https://www.rajadeepusooriya.com/about-more</loc>
+    <lastmod>2025-05-18</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <!-- ═══════════════════════════════════════════════════
+       DIRECTOR PROFILES
+  ═══════════════════════════════════════════════════ -->
+  <url>
+    <loc>https://www.rajadeepusooriya.com/director-raja</loc>
+    <lastmod>2025-05-18</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.rajadeepusooriya.com/director-deepu</loc>
+    <lastmod>2025-05-18</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.rajadeepusooriya.com/director-sooriya</loc>
+    <lastmod>2025-05-18</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.6</priority>
+  </url>
+
+  <!-- ═══════════════════════════════════════════════════
+       LEGAL PAGES
+  ═══════════════════════════════════════════════════ -->
+  <url>
+    <loc>https://www.rajadeepusooriya.com/privacy</loc>
+    <lastmod>2025-05-18</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+  </url>
+  <url>
+    <loc>https://www.rajadeepusooriya.com/terms</loc>
+    <lastmod>2025-05-18</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+  </url>
+  <url>
+    <loc>https://www.rajadeepusooriya.com/disclaimer</loc>
+    <lastmod>2025-05-18</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+  </url>
+
+  <!-- ═══════════════════════════════════════════════════
+       INTERNSHIP LEGAL
+  ═══════════════════════════════════════════════════ -->
+  <url>
+    <loc>https://www.rajadeepusooriya.com/internship-terms</loc>
+    <lastmod>2025-05-18</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  <url>
+    <loc>https://www.rajadeepusooriya.com/internship-privacy</loc>
+    <lastmod>2025-05-18</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.2</priority>
+  </url>
+
+</urlset>
