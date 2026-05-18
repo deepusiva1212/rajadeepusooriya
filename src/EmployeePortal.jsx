@@ -37,6 +37,13 @@ export default function EmployeePortal() {
   const [newLeave, setNewLeave] = useState({ startDate: "", endDate: "", reason: "", type: "Sick Leave" });
   const [isUploading, setIsUploading] = useState(false);
 
+  const [broadcasts, setBroadcasts] = useState([]);
+  useEffect(() => {
+    getDocs(query(collection(db, "broadcasts"), orderBy("createdAt", "desc"))).then(snap => {
+      if (!snap.empty) setBroadcasts(snap.docs.map(d => d.data()));
+    });
+  }, [activeTab]);
+
   const showToast = (message, type = "success") => {
     setToast({ show: true, message, type });
     setTimeout(() => setToast({ show: false, message: "", type: "success" }), 3000);
@@ -208,6 +215,24 @@ export default function EmployeePortal() {
           </div>
           <button onClick={() => fetchAllData(staffData.email)} className="text-[10px] font-bold text-slate-500 uppercase tracking-widest hover:text-blue-600 flex items-center gap-2">🔄 Refresh</button>
         </header>
+
+        </header>
+
+        {/* 📢 LIVE EMERGENCY DIRECTIVE TICKER BAR */}
+        {broadcasts.length > 0 && (
+          <div className="mt-6 mx-4 md:mx-8 bg-gradient-to-r from-amber-500 to-orange-600 text-white px-6 py-3 rounded-lg shadow-md flex items-center justify-between animate-pulse">
+            <div className="flex items-center gap-3">
+              <span className="text-lg">📢</span>
+              <div className="text-xs font-bold tracking-wide">
+                <span className="uppercase font-black bg-white/20 px-2 py-0.5 rounded mr-2">DIRECTIVE ({broadcasts[0].channel})</span> 
+                "{broadcasts[0].message}"
+              </div>
+            </div>
+            <span className="text-[10px] font-mono opacity-80 font-bold">via {broadcasts[0].sender}</span>
+          </div>
+        )}
+
+        <div className="p-4 md:p-8 pb-20 max-w-7xl mx-auto">
 
         <div className="p-4 md:p-8 pb-20 max-w-7xl mx-auto">
           
