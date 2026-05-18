@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { auth, provider, db } from "./firebase";
 import { signInWithPopup, signOut, onAuthStateChanged } from "firebase/auth";
-import { collection, getDocs, query, doc, updateDoc, where, addDoc, serverTimestamp, orderBy } from "firebase/firestore";
+import { collection, getDocs, query, doc, updateDoc, where, addDoc, serverTimestamp, orderBy, arrayUnion } from "firebase/firestore";
 
 // --- IMPORT ALL OUR NEW ENTERPRISE MODULES ---
 import NewsFeed from "./NewsFeed";
@@ -37,14 +37,35 @@ export default function EmployeePortal() {
   const [newLeave, setNewLeave] = useState({ startDate: "", endDate: "", reason: "", type: "Sick Leave" });
   const [isUploading, setIsUploading] = useState(false);
 
-  // 📢 EMERGENCY BROADCAST SYSTEM
+  // 📢 EMERGENCY BROADCAST SYSTEM (Upgraded with Read Receipts)
   const [broadcasts, setBroadcasts] = useState([]);
 
   useEffect(() => {
     getDocs(query(collection(db, "broadcasts"), orderBy("createdAt", "desc"))).then(snap => {
-      if (!snap.empty) setBroadcasts(snap.docs.map(d => d.data()));
+      if (!snap.empty) {
+        const allBroadcasts = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+        // Only show broadcasts that are ACTIVE and have NOT been acknowledged by this specific user
+        const pendingBroadcasts = allBroadcasts.filter(b => 
+          b.isActive !== false && !(b.acknowledgedBy || []).includes(staffData?.email)
+        );
+        setBroadcasts(pendingBroadcasts);
+      }
     });
-  }, [activeTab]);
+  }, [activeTab, staffData]);
+
+  // Function for the employee to click "Got it"
+  const acknowledgeDirective = async (broadcastId) => {
+    try {
+      await updateDoc(doc(db, "broadcasts", broadcastId), {
+        acknowledgedBy: arrayUnion(staffData.email)
+      });
+      // Remove it from their screen instantly
+      setBroadcasts(broadcasts.filter(b => b.id !== broadcastId));
+      showToast("Directive acknowledged.");
+    } catch (e) {
+      showToast("Failed to acknowledge", "error");
+    }
+  };
 
   const showToast = (message, type = "success") => {
     setToast({ show: true, message, type });
@@ -217,17 +238,26 @@ export default function EmployeePortal() {
           <button onClick={() => fetchAllData(staffData.email)} className="text-[10px] font-bold text-slate-500 uppercase tracking-widest hover:text-blue-600 flex items-center gap-2">🔄 Refresh</button>
         </header>
 
-        {/* 📢 LIVE EMERGENCY DIRECTIVE TICKER BAR */}
+        {/* 📢 LIVE EMERGENCY DIRECTIVE TICKER BAR (Upgraded) */}
         {broadcasts.length > 0 && (
-          <div className="mt-6 mx-4 md:mx-8 bg-gradient-to-r from-amber-500 to-orange-600 text-white px-6 py-3 rounded-lg shadow-md flex items-center justify-between animate-pulse">
+          <div className="mt-6 mx-4 md:mx-8 bg-gradient-to-r from-amber-500 to-orange-600 text-white px-6 py-4 rounded-lg shadow-md flex flex-col md:flex-row items-start md:items-center justify-between gap-4 animate-fade-in">
             <div className="flex items-center gap-3">
-              <span className="text-lg">📢</span>
-              <div className="text-xs font-bold tracking-wide">
-                <span className="uppercase font-black bg-white/20 px-2 py-0.5 rounded mr-2">DIRECTIVE ({broadcasts[0].channel})</span> 
+              <span className="text-xl animate-pulse">📢</span>
+              <div className="text-sm font-bold tracking-wide">
+                <span className="uppercase font-black bg-white/20 px-2 py-0.5 rounded-sm mr-2 text-xs">DIRECTIVE ({broadcasts[0].channel})</span> 
                 "{broadcasts[0].message}"
               </div>
             </div>
-            <span className="text-[10px] font-mono opacity-80 font-bold">via {broadcasts[0].sender}</span>
+            
+            <div className="flex items-center gap-4 w-full md:w-auto justify-end border-t md:border-t-0 border-white/20 pt-3 md:pt-0">
+              <span className="text-[10px] font-mono opacity-80 font-bold hidden lg:block">via {broadcasts[0].sender}</span>
+              <button 
+                onClick={() => acknowledgeDirective(broadcasts[0].id)} 
+                className="bg-white text-orange-600 hover:bg-orange-50 px-4 py-2 rounded text-xs font-black uppercase tracking-widest shadow-sm transition-transform active:scale-95 w-full md:w-auto"
+              >
+                ✓ I Acknowledge
+              </button>
+            </div>
           </div>
         )}
 
