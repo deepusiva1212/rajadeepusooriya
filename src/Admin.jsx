@@ -4,6 +4,7 @@ import { signInWithPopup, signOut, onAuthStateChanged } from "firebase/auth";
 import { collection, getDocs, query, orderBy, doc, updateDoc, deleteDoc, where, addDoc } from "firebase/firestore";
 import JSZip from "jszip";
 import { saveAs } from "file-saver";
+import OfferLetterButton from "./OfferLetterButton";
 
 export default function Admin() {
   // ─── AUTH & RBAC STATE ──────────────────────────────────────────────
