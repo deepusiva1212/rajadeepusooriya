@@ -447,6 +447,7 @@ useEffect(() => {
                           >
                             <option value="Pending">Pending</option><option value="Reviewed">Reviewed</option><option value="Interviewing">Interviewing</option><option value="Selected">Selected</option><option value="Rejected">Rejected</option>
                           </select>
+                            <OfferLetterButton candidate={app} />
                         </td>
                         <td className="px-6 py-4">
                           <div className="text-xs font-bold text-gray-900">{app.college}</div>
