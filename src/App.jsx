@@ -11,6 +11,7 @@ import InternshipPrivacy from "./InternshipPrivacy";
 import EmployeePortal from "./EmployeePortal";
 import DirectorPortal from "./DirectorPortal";
 import PageTransitionBar from "./PageTransitionBar";
+import Blog from "./Blog";
 
 // ─── Utility ─────────────────────────────────────────────────────────────────
 function useInView(threshold = 0.15) {
@@ -488,6 +489,8 @@ export default function App() {
           <About navigateTo={navigateTo} />
           <CoreValues />
           <Brands />
+          {/* 📰 ADDS LIVE PUBLIC BLOG STREAM */}
+            <Blog />
           <Contact />
         </>
       )}
