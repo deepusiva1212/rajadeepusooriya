@@ -21,6 +21,7 @@ import Timesheets from "./Timesheets";
 import OnCallRoster from "./OnCallRoster";
 import BrandAssets from "./BrandAssets";
 import MyTasks from "./MyTasks";
+import IDCardButton from "./IDCardButton";
 
 export default function EmployeePortal() {
   const [user, setUser] = useState(null);
@@ -294,6 +295,8 @@ export default function EmployeePortal() {
                     <div className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Company Login Email</div>
                     <div className="text-gray-900 font-bold">{staffData.email}</div>
                   </div>
+                  {/* 🪪 NEW DIGITAL ID BUTTON HERE */}
+                  <IDCardButton staffData={staffData} />
                 </div>
               </div>
             </div>
