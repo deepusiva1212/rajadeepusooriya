@@ -22,6 +22,7 @@ import ComplianceAdmin from "./ComplianceAdmin";
 import AdminAnalytics from "./AdminAnalytics";
 import Blog from "./Blog";
 import BroadcastManager from "./BroadcastManager";
+import ChatWidget from "./ChatWidget";
 
 export default function DirectorPortal() {
   const [user, setUser] = useState(null);
@@ -374,6 +375,7 @@ export default function DirectorPortal() {
         )}
 
       </main>
+      <ChatWidget userName={staffData.name} userEmail={staffData.email} />
     </div>
   );
 }
