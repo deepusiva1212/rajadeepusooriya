@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { auth, provider, db } from "./firebase";
 import { signInWithPopup, signOut, onAuthStateChanged } from "firebase/auth";
-import { collection, getDocs, query, doc, updateDoc, where, addDoc, serverTimestamp } from "firebase/firestore";
+import { collection, getDocs, query, doc, updateDoc, where, addDoc, serverTimestamp, orderBy } from "firebase/firestore";
 
 // --- IMPORT ALL OUR NEW ENTERPRISE MODULES ---
 import NewsFeed from "./NewsFeed";
