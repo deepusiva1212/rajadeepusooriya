@@ -19,6 +19,8 @@ import SafetyDirectory from "./SafetyDirectory";
 import MyCalendar from "./MyCalendar";
 import Timesheets from "./Timesheets";
 import OnCallRoster from "./OnCallRoster";
+import BrandAssets from "./BrandAssets";
+import MyTasks from "./MyTasks";
 
 export default function EmployeePortal() {
   const [user, setUser] = useState(null);
@@ -189,7 +191,7 @@ export default function EmployeePortal() {
         <div className="flex-1 py-6 flex flex-col gap-1 overflow-y-auto custom-scrollbar">
           
           <div className="text-[10px] font-black text-slate-500 tracking-widest uppercase mt-2 mb-2 px-6">My Workspace</div>
-          <button onClick={() => {setActiveTab("my-tasks"); setIsSidebarOpen(false);}} className={`text-left px-6 py-2.5 text-sm font-semibold transition-all flex items-center gap-3 ${activeTab === "my-tasks" ? "bg-blue-500/10 text-blue-400 border-r-2 border-blue-500" : "hover:bg-slate-800/50 hover:text-white"}`}><span className="text-lg">✅</span> My Tasks</button>
+          {activeTab === "my-tasks" && <MyTasks tasks={tasks} updateTaskStatus={updateTaskStatus} />}
           <button onClick={() => {setActiveTab("calendar"); setIsSidebarOpen(false);}} className={`text-left px-6 py-2.5 text-sm font-semibold transition-all flex items-center gap-3 ${activeTab === "calendar" ? "bg-blue-500/10 text-blue-400 border-r-2 border-blue-500" : "hover:bg-slate-800/50 hover:text-white"}`}><span className="text-lg">📅</span> My Calendar</button>
           <button onClick={() => {setActiveTab("notepad"); setIsSidebarOpen(false);}} className={`text-left px-6 py-2.5 text-sm font-semibold transition-all flex items-center gap-3 ${activeTab === "notepad" ? "bg-blue-500/10 text-blue-400 border-r-2 border-blue-500" : "hover:bg-slate-800/50 hover:text-white"}`}><span className="text-lg">📝</span> Private Notepad</button>
           <button onClick={() => {setActiveTab("request-leave"); setIsSidebarOpen(false);}} className={`text-left px-6 py-2.5 text-sm font-semibold transition-all flex items-center gap-3 ${activeTab === "request-leave" ? "bg-blue-500/10 text-blue-400 border-r-2 border-blue-500" : "hover:bg-slate-800/50 hover:text-white"}`}><span className="text-lg">🏖️</span> Request Leave</button>
@@ -199,6 +201,7 @@ export default function EmployeePortal() {
           <button onClick={() => {setActiveTab("culture"); setIsSidebarOpen(false);}} className={`text-left px-6 py-2.5 text-sm font-semibold transition-all flex items-center gap-3 ${activeTab === "culture" ? "bg-blue-500/10 text-blue-400 border-r-2 border-blue-500" : "hover:bg-slate-800/50 hover:text-white"}`}><span className="text-lg">🔥</span> Pulse & Kudos</button>
           <button onClick={() => {setActiveTab("social"); setIsSidebarOpen(false);}} className={`text-left px-6 py-2.5 text-sm font-semibold transition-all flex items-center gap-3 ${activeTab === "social" ? "bg-blue-500/10 text-blue-400 border-r-2 border-blue-500" : "hover:bg-slate-800/50 hover:text-white"}`}><span className="text-lg">🤝</span> Clubs & Mentors</button>
           <button onClick={() => {setActiveTab("feedback"); setIsSidebarOpen(false);}} className={`text-left px-6 py-2.5 text-sm font-semibold transition-all flex items-center gap-3 ${activeTab === "feedback" ? "bg-blue-500/10 text-blue-400 border-r-2 border-blue-500" : "hover:bg-slate-800/50 hover:text-white"}`}><span className="text-lg">💡</span> Feedback Box</button>
+          <button onClick={() => {setActiveTab("brand-assets"); setIsSidebarOpen(false);}} className={`text-left px-6 py-2.5 text-sm font-semibold transition-all flex items-center gap-3 ${activeTab === "brand-assets" ? "bg-blue-500/10 text-blue-400 border-r-2 border-blue-500" : "hover:bg-slate-800/50 hover:text-white"}`}><span className="text-lg">🎨</span> Brand Assets</button>
 
           <div className="text-[10px] font-black text-slate-500 tracking-widest uppercase mt-6 mb-2 px-6">Operations & Tools</div>
           <button onClick={() => {setActiveTab("attendance"); setIsSidebarOpen(false);}} className={`text-left px-6 py-2.5 text-sm font-semibold transition-all flex items-center gap-3 ${activeTab === "attendance" ? "bg-blue-500/10 text-blue-400 border-r-2 border-blue-500" : "hover:bg-slate-800/50 hover:text-white"}`}><span className="text-lg">⏱️</span> Time & Location</button>
@@ -373,6 +376,7 @@ export default function EmployeePortal() {
           {activeTab === "safety" && <SafetyDirectory role={staffData.role} />}
           {activeTab === "timesheets" && <Timesheets role={staffData.role} userName={staffData.name} userEmail={staffData.email} />}
           {activeTab === "oncall" && <OnCallRoster role={staffData.role} />}
+          {activeTab === "brand-assets" && <BrandAssets />}
 
         </div>
       </main>
