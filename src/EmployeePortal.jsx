@@ -299,34 +299,7 @@ export default function EmployeePortal() {
             </div>
           )}
 
-          {/* MY TASKS */}
-          {activeTab === "my-tasks" && (
-            <div className="animate-fade-in bg-white border border-gray-200 rounded-sm shadow-sm overflow-hidden">
-              <div className="p-4 bg-slate-50 border-b border-gray-200 font-bold text-sm text-slate-800">Tasks Assigned to Me</div>
-              <table className="w-full text-left border-collapse">
-                <thead><tr className="border-b border-gray-200"><th className="px-6 py-3 text-[10px] text-gray-500 uppercase font-bold tracking-widest">Task Details</th><th className="px-6 py-3 text-[10px] text-gray-500 uppercase font-bold tracking-widest">Assigned By</th><th className="px-6 py-3 text-[10px] text-gray-500 uppercase font-bold tracking-widest">My Status</th></tr></thead>
-                <tbody className="divide-y divide-gray-100">
-                  {tasks.map(task => (
-                    <tr key={task.id} className="hover:bg-slate-50">
-                      <td className="px-6 py-4">
-                        <div className="font-bold text-sm text-slate-900 mb-1">{task.title}</div>
-                        <div className="text-xs text-slate-600 mb-2 whitespace-pre-wrap">{task.description}</div>
-                        <div className="text-[10px] font-bold text-red-600 uppercase tracking-widest bg-red-50 inline-block px-2 py-1 rounded">Due: {task.deadline}</div>
-                      </td>
-                      <td className="px-6 py-4 text-xs font-bold text-slate-600">{task.assignedBy}</td>
-                      <td className="px-6 py-4">
-                        <select value={task.status} onChange={(e) => updateTaskStatus(task.id, e.target.value)} className={`text-[10px] font-black tracking-widest uppercase rounded-sm px-3 py-2 border outline-none cursor-pointer ${task.status === 'Pending' ? 'bg-yellow-50 text-yellow-700' : task.status === 'In Progress' ? 'bg-blue-50 text-blue-700' : 'bg-green-50 text-green-700'}`}>
-                          <option>Pending</option><option>In Progress</option><option>Completed</option>
-                        </select>
-                      </td>
-                    </tr>
-                  ))}
-                  {tasks.length === 0 && <tr><td colSpan="3" className="px-6 py-12 text-center text-slate-400 text-sm font-bold uppercase tracking-widest">You have no assigned tasks.</td></tr>}
-                </tbody>
-              </table>
-            </div>
-          )}
-
+          
           {/* REQUEST LEAVE */}
           {activeTab === "request-leave" && (
             <div className="animate-fade-in grid lg:grid-cols-3 gap-8">
