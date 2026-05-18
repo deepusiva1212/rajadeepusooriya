@@ -37,7 +37,9 @@ export default function EmployeePortal() {
   const [newLeave, setNewLeave] = useState({ startDate: "", endDate: "", reason: "", type: "Sick Leave" });
   const [isUploading, setIsUploading] = useState(false);
 
+  // 📢 EMERGENCY BROADCAST SYSTEM
   const [broadcasts, setBroadcasts] = useState([]);
+
   useEffect(() => {
     getDocs(query(collection(db, "broadcasts"), orderBy("createdAt", "desc"))).then(snap => {
       if (!snap.empty) setBroadcasts(snap.docs.map(d => d.data()));
@@ -155,7 +157,6 @@ export default function EmployeePortal() {
       {isSidebarOpen && <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-40 md:hidden" onClick={() => setIsSidebarOpen(false)} />}
 
       <aside className={`w-64 bg-slate-900 text-slate-300 flex flex-col shadow-2xl z-50 fixed md:static inset-y-0 left-0 transform transition-transform duration-300 ${isSidebarOpen ? "translate-x-0" : "-translate-x-full"} md:translate-x-0 overflow-y-auto`}>
-        
         <div className="p-6 border-b border-slate-800 flex items-center gap-3 sticky top-0 bg-slate-900 z-10">
           <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-indigo-800 text-white font-black flex items-center justify-center rounded-lg shadow-lg text-lg">RDS</div>
           <div>
@@ -216,8 +217,6 @@ export default function EmployeePortal() {
           <button onClick={() => fetchAllData(staffData.email)} className="text-[10px] font-bold text-slate-500 uppercase tracking-widest hover:text-blue-600 flex items-center gap-2">🔄 Refresh</button>
         </header>
 
-        </header>
-
         {/* 📢 LIVE EMERGENCY DIRECTIVE TICKER BAR */}
         {broadcasts.length > 0 && (
           <div className="mt-6 mx-4 md:mx-8 bg-gradient-to-r from-amber-500 to-orange-600 text-white px-6 py-3 rounded-lg shadow-md flex items-center justify-between animate-pulse">
@@ -231,8 +230,6 @@ export default function EmployeePortal() {
             <span className="text-[10px] font-mono opacity-80 font-bold">via {broadcasts[0].sender}</span>
           </div>
         )}
-
-        <div className="p-4 md:p-8 pb-20 max-w-7xl mx-auto">
 
         <div className="p-4 md:p-8 pb-20 max-w-7xl mx-auto">
           
