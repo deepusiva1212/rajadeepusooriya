@@ -191,7 +191,7 @@ export default function EmployeePortal() {
         <div className="flex-1 py-6 flex flex-col gap-1 overflow-y-auto custom-scrollbar">
           
           <div className="text-[10px] font-black text-slate-500 tracking-widest uppercase mt-2 mb-2 px-6">My Workspace</div>
-          {activeTab === "my-tasks" && <MyTasks tasks={tasks} updateTaskStatus={updateTaskStatus} />}
+
           <button onClick={() => {setActiveTab("my-tasks"); setIsSidebarOpen(false);}} className={`text-left px-6 py-2.5 text-sm font-semibold transition-all flex items-center gap-3 ${activeTab === "my-tasks" ? "bg-blue-500/10 text-blue-400 border-r-2 border-blue-500" : "hover:bg-slate-800/50 hover:text-white"}`}><span className="text-lg">✅</span> My Tasks</button>
           <button onClick={() => {setActiveTab("calendar"); setIsSidebarOpen(false);}} className={`text-left px-6 py-2.5 text-sm font-semibold transition-all flex items-center gap-3 ${activeTab === "calendar" ? "bg-blue-500/10 text-blue-400 border-r-2 border-blue-500" : "hover:bg-slate-800/50 hover:text-white"}`}><span className="text-lg">📅</span> My Calendar</button>
           <button onClick={() => {setActiveTab("notepad"); setIsSidebarOpen(false);}} className={`text-left px-6 py-2.5 text-sm font-semibold transition-all flex items-center gap-3 ${activeTab === "notepad" ? "bg-blue-500/10 text-blue-400 border-r-2 border-blue-500" : "hover:bg-slate-800/50 hover:text-white"}`}><span className="text-lg">📝</span> Private Notepad</button>
