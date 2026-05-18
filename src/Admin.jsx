@@ -5,6 +5,7 @@ import { collection, getDocs, query, orderBy, doc, updateDoc, deleteDoc, where, 
 import JSZip from "jszip";
 import { saveAs } from "file-saver";
 import OfferLetterButton from "./OfferLetterButton";
+import CompletionCertificateButton from "./CompletionCertificateButton";
 
 export default function Admin() {
   // ─── AUTH & RBAC STATE ──────────────────────────────────────────────
@@ -448,6 +449,7 @@ useEffect(() => {
                             <option value="Pending">Pending</option><option value="Reviewed">Reviewed</option><option value="Interviewing">Interviewing</option><option value="Selected">Selected</option><option value="Rejected">Rejected</option>
                           </select>
                             <OfferLetterButton candidate={app} />
+                            <CompletionCertificateButton candidate={app} />
                         </td>
                         <td className="px-6 py-4">
                           <div className="text-xs font-bold text-gray-900">{app.college}</div>
