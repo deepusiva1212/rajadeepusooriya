@@ -189,17 +189,53 @@ useEffect(() => {
 
   // ─── RESTORED MISSING FUNCTIONS: EXPORT, ZIP, AND DUPLICATES ────────
   const exportToCSV = () => {
-    const headers = ["App ID,Date,Batch,Name,Gender,Email,Phone,University,College,Stream,Major,Year,Brand,Duration,Status"];
-    const rows = filteredApps.map(a => 
-      `"${a.applicationId}","${a.dateStr}","${a.batch}","${a.name}","${a.gender}","${a.email}","${a.phone}","${a.university}","${a.college}","${a.stream}","${a.major}","${a.year}","${a.brand}","${a.duration}","${a.status || 'Pending'}"`
-    );
-    const csvContent = "data:text/csv;charset=utf-8," + headers.concat(rows).join("\n");
-    const link = document.createElement("a");
-    link.href = encodeURI(csvContent);
-    link.download = `RDS_Applications.csv`;
-    document.body.appendChild(link); link.click(); document.body.removeChild(link);
-    showToast("Excel Report Downloaded");
-  };
+    if (!filteredApps || filteredApps.length === 0) {
+      showToast("No active data entries to compile.", "error");
+      return;
+    }
+
+    // 1. Maintain your exact 15 column headers
+    const headers = ["App ID", "Date", "Batch", "Name", "Gender", "Email", "Phone", "University", "College", "Stream", "Major", "Year", "Brand", "Duration", "Status"];
+
+    // 2. Sanitation logic to prevent commas and newlines from corrupting Excel cells
+    const cleanCSVField = (str) => {
+      if (!str) return '""';
+      return `"${String(str).replace(/"/g, '""').replace(/\n/g, ' ')}"`;
+    };
+
+    // 3. Map your fields matching your exact database keys perfectly
+    const rows = filteredApps.map(a => [
+      cleanCSVField(a.applicationId),
+      cleanCSVField(a.dateStr),
+      cleanCSVField(a.batch),
+      cleanCSVField(a.name),
+      cleanCSVField(a.gender),
+      cleanCSVField(a.email),
+      cleanCSVField(a.phone),
+      cleanCSVField(a.university),
+      cleanCSVField(a.college),
+      cleanCSVField(a.stream),
+      cleanCSVField(a.major),
+      cleanCSVField(a.year),
+      cleanCSVField(a.brand),
+      cleanCSVField(a.duration),
+      cleanCSVField(a.status || 'Pending')
+    ].join(","));
+
+    // 4. Safe UTF-8 byte stream generation
+    const csvContent = "data:text/csv;charset=utf-8,\uFEFF" + [headers.join(",")].concat(rows).join("\n");
+    const encodedUri = encodeURI(csvContent);
+
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", `RDS_Applications_${new Date().toISOString().slice(0, 10)}.csv`);
+    document.body.appendChild(link);
+
+    link.click();
+    document.body.removeChild(link);
+
+    showToast("Excel Report Downloaded");
+  };
 
   const downloadSelectedResumes = async () => {
     showToast("Zipping files... Please wait.");
