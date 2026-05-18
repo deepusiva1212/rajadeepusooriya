@@ -299,6 +299,8 @@ export default function EmployeePortal() {
             </div>
           )}
 
+          {/* MY TASKS (KANBAN BOARD) */}
+          {activeTab === "my-tasks" && <MyTasks tasks={tasks} updateTaskStatus={updateTaskStatus} />}
           
           {/* REQUEST LEAVE */}
           {activeTab === "request-leave" && (
