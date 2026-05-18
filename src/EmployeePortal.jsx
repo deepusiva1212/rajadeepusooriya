@@ -142,45 +142,94 @@ export default function EmployeePortal() {
         <span className="text-sm font-bold text-gray-800 tracking-wide">{toast.message}</span>
       </div>
 
-      <aside className="w-64 bg-[#081f2c] text-white hidden md:flex flex-col shadow-2xl z-20">
-        <div className="p-6 border-b border-white/10 flex items-center gap-3">
-          <div className="w-10 h-10 bg-[#10b981] font-black flex items-center justify-center rounded-sm text-lg text-white">RDS</div>
-          <div><div className="font-bold tracking-widest uppercase text-[10px] text-gray-400">Employee</div><div className="text-sm font-bold">Workspace</div></div>
+      <aside className={`w-64 bg-slate-900 text-slate-300 flex flex-col shadow-2xl z-50 fixed md:static inset-y-0 left-0 transform transition-transform duration-300 ${isSidebarOpen ? "translate-x-0" : "-translate-x-full"} md:translate-x-0 overflow-y-auto`}>
+        {/* BRANDING HEADER */}
+        <div className="p-6 border-b border-slate-800 flex items-center gap-3 sticky top-0 bg-slate-900 z-10">
+          <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-indigo-800 text-white font-black flex items-center justify-center rounded-lg shadow-lg text-lg">RDS</div>
+          <div>
+            <div className="font-bold tracking-widest uppercase text-[9px] text-blue-400">Raja Deepu Sooriya</div>
+            <div className="text-sm font-bold text-white tracking-wide">Workspace</div>
+          </div>
         </div>
-        <div className="p-6 flex-1 flex flex-col gap-2">
-          <button onClick={() => setActiveTab("my-tasks")} className={`text-left px-4 py-3 rounded-sm text-sm font-bold transition-colors flex items-center justify-between ${activeTab === "my-tasks" ? "bg-white/10 text-white" : "text-gray-400 hover:text-white"}`}>✅ My Tasks {tasks.filter(t => t.status === 'Pending').length > 0 && <span className="bg-red-500 text-white text-[9px] px-2 py-0.5 rounded-full">{tasks.filter(t => t.status === 'Pending').length}</span>}</button>
-          <button onClick={() => setActiveTab("my-leaves")} className={`text-left px-4 py-3 rounded-sm text-sm font-bold transition-colors ${activeTab === "my-leaves" ? "bg-white/10 text-white" : "text-gray-400 hover:text-white"}`}>📅 Request Leave</button>
-          <button onClick={() => setActiveTab("profile")} className={`text-left px-4 py-3 rounded-sm text-sm font-bold transition-colors ${activeTab === "profile" ? "bg-white/10 text-white" : "text-gray-400 hover:text-white"}`}>👤 My Profile</button>
-          <button onClick={() => setActiveTab("news")} className={`text-left px-4 py-3 rounded-sm text-sm font-bold transition-colors ${activeTab === "news" ? "bg-white/10 text-white" : "text-gray-400 hover:text-white"}`}>📰 Company News</button>
-          <button onClick={() => setActiveTab("feedback")} className={`text-left px-4 py-3 rounded-sm text-sm font-bold transition-colors ${activeTab === "feedback" ? "bg-white/10 text-white" : "text-gray-400 hover:text-white"}`}>💡 Feedback Box</button> 
-          <button onClick={() => setActiveTab("learning")} className={`text-left px-4 py-3 rounded-sm text-sm font-bold transition-colors ${activeTab === "learning" ? "bg-white/10 text-white" : "text-gray-400 hover:text-white"}`}>🎓 Learning Hub</button>
-          <button onClick={() => setActiveTab("notepad")} className={`text-left px-4 py-3 rounded-sm text-sm font-bold transition-colors ${activeTab === "notepad" ? "bg-white/10 text-white" : "text-gray-400 hover:text-white"}`}>📝 Private Notepad</button>
-          <button onClick={() => setActiveTab("attendance")} className={`text-left px-4 py-3 rounded-sm text-sm font-bold transition-colors ${activeTab === "attendance" ? "bg-white/10 text-white" : "text-gray-400 hover:text-white"}`}>⏱️ Time & Location</button>
-          <button onClick={() => setActiveTab("culture")} className={`text-left px-4 py-3 rounded-sm text-sm font-bold transition-colors ${activeTab === "culture" ? "bg-white/10 text-white" : "text-gray-400 hover:text-white"}`}>🔥 Pulse & Kudos</button>
-          <button onClick={() => setActiveTab("policies")} className={`text-left px-4 py-3 rounded-sm text-sm font-bold transition-colors ${activeTab === "policies" ? "bg-white/10 text-white" : "text-gray-400 hover:text-white"}`}>✍️ Handbooks</button>
-          <button onClick={() => setActiveTab("social")} className={`text-left px-4 py-3 rounded-sm text-sm font-bold transition-colors ${activeTab === "social" ? "bg-white/10 text-white" : "text-gray-400 hover:text-white"}`}>🤝 Clubs & Mentors</button>
-          <button onClick={() => setActiveTab("operations")} className={`text-left px-4 py-3 rounded-sm text-sm font-bold transition-colors ${activeTab === "operations" ? "bg-white/10 text-white" : "text-gray-400 hover:text-white"}`}>⚡ Operations Hub</button>
-          <button onClick={() => setActiveTab("calendar")} className={`text-left px-4 py-3 rounded-sm text-sm font-bold transition-colors ${activeTab === "calendar" ? "bg-white/10 text-white" : "text-gray-400 hover:text-white"}`}>📅 My Calendar</button>
-          <button onClick={() => setActiveTab("performance")} className={`text-left px-4 py-3 rounded-sm text-sm font-bold transition-colors ${activeTab === "performance" ? "bg-white/10 text-white" : "text-gray-400 hover:text-white"}`}>🎯 Goals & OKRs</button>
-          <button onClick={() => setActiveTab("ithub")} className={`text-left px-4 py-3 rounded-sm text-sm font-bold transition-colors ${activeTab === "ithub" ? "bg-white/10 text-white" : "text-gray-400 hover:text-white"}`}>💻 IT Helpdesk</button>
-          <button onClick={() => setActiveTab("safety")} className={`text-left px-4 py-3 rounded-sm text-sm font-bold transition-colors ${activeTab === "safety" ? "bg-red-500/20 text-red-400" : "text-gray-400 hover:text-red-400"}`}>🚑 Safety & First Aid</button>
-          <button onClick={() => setActiveTab("timesheets")} className={`text-left px-4 py-3 rounded-sm text-sm font-bold transition-colors ${activeTab === "timesheets" ? "bg-white/10 text-white" : "text-gray-400 hover:text-white"}`}>⏱️ Timesheets & Breaks</button>
-          <button onClick={() => setActiveTab("oncall")} className={`text-left px-4 py-3 rounded-sm text-sm font-bold transition-colors ${activeTab === "oncall" ? "bg-white/10 text-white" : "text-gray-400 hover:text-white"}`}>🌙 On-Call Roster</button>
-          <button onClick={() => setActiveTab("compliance")} className={`text-left px-4 py-3 rounded-sm text-sm font-bold transition-colors ${activeTab === "compliance" ? "bg-red-500/20 text-red-400" : "text-gray-400 hover:text-red-400"}`}>⚖️ Legal & Handover</button>
+
+        <div className="flex-1 py-6 flex flex-col gap-1 overflow-y-auto custom-scrollbar">
+          
+          {/* CATEGORY 1: MY WORKSPACE */}
+          <div className="text-[10px] font-black text-slate-500 tracking-widest uppercase mt-2 mb-2 px-6">My Workspace</div>
+          
+          <button onClick={() => setActiveTab("my-tasks")} className={`text-left px-6 py-2.5 text-sm font-semibold transition-all flex items-center gap-3 ${activeTab === "my-tasks" ? "bg-blue-500/10 text-blue-400 border-r-2 border-blue-500" : "hover:bg-slate-800/50 hover:text-white"}`}>
+            <span className="text-lg">✅</span> My Tasks
+          </button>
+          
+          <button onClick={() => setActiveTab("calendar")} className={`text-left px-6 py-2.5 text-sm font-semibold transition-all flex items-center gap-3 ${activeTab === "calendar" ? "bg-blue-500/10 text-blue-400 border-r-2 border-blue-500" : "hover:bg-slate-800/50 hover:text-white"}`}>
+            <span className="text-lg">📅</span> My Calendar
+          </button>
+          
+          <button onClick={() => setActiveTab("notepad")} className={`text-left px-6 py-2.5 text-sm font-semibold transition-all flex items-center gap-3 ${activeTab === "notepad" ? "bg-blue-500/10 text-blue-400 border-r-2 border-blue-500" : "hover:bg-slate-800/50 hover:text-white"}`}>
+            <span className="text-lg">📝</span> Private Notepad
+          </button>
+
+          <button onClick={() => setActiveTab("request-leave")} className={`text-left px-6 py-2.5 text-sm font-semibold transition-all flex items-center gap-3 ${activeTab === "request-leave" ? "bg-blue-500/10 text-blue-400 border-r-2 border-blue-500" : "hover:bg-slate-800/50 hover:text-white"}`}>
+            <span className="text-lg">🏖️</span> Request Leave
+          </button>
+
+          {/* CATEGORY 2: COMPANY & CULTURE */}
+          <div className="text-[10px] font-black text-slate-500 tracking-widest uppercase mt-6 mb-2 px-6">Company & Culture</div>
+          
+          <button onClick={() => setActiveTab("news")} className={`text-left px-6 py-2.5 text-sm font-semibold transition-all flex items-center gap-3 ${activeTab === "news" ? "bg-blue-500/10 text-blue-400 border-r-2 border-blue-500" : "hover:bg-slate-800/50 hover:text-white"}`}>
+            <span className="text-lg">📰</span> News & Updates
+          </button>
+          
+          <button onClick={() => setActiveTab("culture")} className={`text-left px-6 py-2.5 text-sm font-semibold transition-all flex items-center gap-3 ${activeTab === "culture" ? "bg-blue-500/10 text-blue-400 border-r-2 border-blue-500" : "hover:bg-slate-800/50 hover:text-white"}`}>
+            <span className="text-lg">🔥</span> Pulse & Kudos
+          </button>
+          
+          <button onClick={() => setActiveTab("social")} className={`text-left px-6 py-2.5 text-sm font-semibold transition-all flex items-center gap-3 ${activeTab === "social" ? "bg-blue-500/10 text-blue-400 border-r-2 border-blue-500" : "hover:bg-slate-800/50 hover:text-white"}`}>
+            <span className="text-lg">🤝</span> Clubs & Mentors
+          </button>
+
+          <button onClick={() => setActiveTab("feedback")} className={`text-left px-6 py-2.5 text-sm font-semibold transition-all flex items-center gap-3 ${activeTab === "feedback" ? "bg-blue-500/10 text-blue-400 border-r-2 border-blue-500" : "hover:bg-slate-800/50 hover:text-white"}`}>
+            <span className="text-lg">💡</span> Feedback Box
+          </button>
+
+          {/* CATEGORY 3: OPERATIONS & SUPPORT */}
+          <div className="text-[10px] font-black text-slate-500 tracking-widest uppercase mt-6 mb-2 px-6">Operations</div>
+
+          <button onClick={() => setActiveTab("attendance")} className={`text-left px-6 py-2.5 text-sm font-semibold transition-all flex items-center gap-3 ${activeTab === "attendance" ? "bg-blue-500/10 text-blue-400 border-r-2 border-blue-500" : "hover:bg-slate-800/50 hover:text-white"}`}>
+            <span className="text-lg">⏱️</span> Time & Location
+          </button>
+
+          <button onClick={() => setActiveTab("timesheets")} className={`text-left px-6 py-2.5 text-sm font-semibold transition-all flex items-center gap-3 ${activeTab === "timesheets" ? "bg-blue-500/10 text-blue-400 border-r-2 border-blue-500" : "hover:bg-slate-800/50 hover:text-white"}`}>
+            <span className="text-lg">📊</span> Timesheets
+          </button>
+
+          <button onClick={() => setActiveTab("ithub")} className={`text-left px-6 py-2.5 text-sm font-semibold transition-all flex items-center gap-3 ${activeTab === "ithub" ? "bg-blue-500/10 text-blue-400 border-r-2 border-blue-500" : "hover:bg-slate-800/50 hover:text-white"}`}>
+            <span className="text-lg">💻</span> IT Helpdesk
+          </button>
+
+          <button onClick={() => setActiveTab("learning")} className={`text-left px-6 py-2.5 text-sm font-semibold transition-all flex items-center gap-3 ${activeTab === "learning" ? "bg-blue-500/10 text-blue-400 border-r-2 border-blue-500" : "hover:bg-slate-800/50 hover:text-white"}`}>
+            <span className="text-lg">🎓</span> Learning Hub
+          </button>
+
+          <button onClick={() => setActiveTab("policies")} className={`text-left px-6 py-2.5 text-sm font-semibold transition-all flex items-center gap-3 ${activeTab === "policies" ? "bg-blue-500/10 text-blue-400 border-r-2 border-blue-500" : "hover:bg-slate-800/50 hover:text-white"}`}>
+            <span className="text-lg">✍️</span> Handbooks
+          </button>
         </div>
-        <div className="p-6 border-t border-white/10 bg-white/5 shrink-0">
-          <div className="flex items-center gap-3 mb-4">
+
+        {/* USER PROFILE FOOTER */}
+        <div className="p-6 border-t border-slate-800 bg-slate-900/50">
+          <div className="flex items-center gap-3 mb-4 cursor-pointer hover:opacity-80 transition-opacity" onClick={() => setActiveTab("my-profile")}>
             {staffData.photoUrl ? (
-              <img src={staffData.photoUrl} alt="Profile" className="w-8 h-8 rounded-full object-cover border border-white/20" />
+              <img src={staffData.photoUrl} alt="Profile" className="w-10 h-10 rounded-lg object-cover border border-slate-700 shadow-sm" />
             ) : (
-              <div className="w-8 h-8 rounded-full bg-gray-700 flex items-center justify-center font-bold text-xs uppercase">{staffData.name.charAt(0)}</div>
+              <div className="w-10 h-10 rounded-lg bg-slate-700 flex items-center justify-center font-bold text-sm text-white shadow-sm">{staffData.name.charAt(0)}</div>
             )}
             <div className="overflow-hidden">
-              <div className="text-xs font-bold text-white truncate">{staffData.name}</div>
-              <div className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">ID: {staffData.employeeId}</div>
+              <div className="text-sm font-bold text-white truncate">{staffData.name}</div>
+              <div className="text-[10px] text-slate-400 font-mono tracking-widest">{staffData.employeeId}</div>
             </div>
           </div>
-          <button onClick={() => signOut(auth)} className="w-full py-2 border border-white/20 text-gray-300 hover:bg-white/10 text-[10px] font-bold uppercase tracking-widest rounded-sm transition-colors">Sign Out</button>
+          <button onClick={() => signOut(auth)} className="w-full py-2.5 border border-slate-700 text-slate-300 hover:bg-slate-800 hover:text-white text-[10px] font-bold uppercase tracking-widest rounded-lg transition-all">Sign Out</button>
         </div>
       </aside>
 
