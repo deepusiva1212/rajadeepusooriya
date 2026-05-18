@@ -156,64 +156,25 @@ export default function EmployeePortal() {
           
           {/* CATEGORY 1: MY WORKSPACE */}
           <div className="text-[10px] font-black text-slate-500 tracking-widest uppercase mt-2 mb-2 px-6">My Workspace</div>
-          
-          <button onClick={() => setActiveTab("my-tasks")} className={`text-left px-6 py-2.5 text-sm font-semibold transition-all flex items-center gap-3 ${activeTab === "my-tasks" ? "bg-blue-500/10 text-blue-400 border-r-2 border-blue-500" : "hover:bg-slate-800/50 hover:text-white"}`}>
-            <span className="text-lg">✅</span> My Tasks
-          </button>
-          
-          <button onClick={() => setActiveTab("calendar")} className={`text-left px-6 py-2.5 text-sm font-semibold transition-all flex items-center gap-3 ${activeTab === "calendar" ? "bg-blue-500/10 text-blue-400 border-r-2 border-blue-500" : "hover:bg-slate-800/50 hover:text-white"}`}>
-            <span className="text-lg">📅</span> My Calendar
-          </button>
-          
-          <button onClick={() => setActiveTab("notepad")} className={`text-left px-6 py-2.5 text-sm font-semibold transition-all flex items-center gap-3 ${activeTab === "notepad" ? "bg-blue-500/10 text-blue-400 border-r-2 border-blue-500" : "hover:bg-slate-800/50 hover:text-white"}`}>
-            <span className="text-lg">📝</span> Private Notepad
-          </button>
-
-          <button onClick={() => setActiveTab("request-leave")} className={`text-left px-6 py-2.5 text-sm font-semibold transition-all flex items-center gap-3 ${activeTab === "request-leave" ? "bg-blue-500/10 text-blue-400 border-r-2 border-blue-500" : "hover:bg-slate-800/50 hover:text-white"}`}>
-            <span className="text-lg">🏖️</span> Request Leave
-          </button>
+          <button onClick={() => {setActiveTab("my-tasks"); setIsSidebarOpen(false);}} className={`text-left px-6 py-2.5 text-sm font-semibold transition-all flex items-center gap-3 ${activeTab === "my-tasks" ? "bg-blue-500/10 text-blue-400 border-r-2 border-blue-500" : "hover:bg-slate-800/50 hover:text-white"}`}><span className="text-lg">✅</span> My Tasks</button>
+          <button onClick={() => {setActiveTab("calendar"); setIsSidebarOpen(false);}} className={`text-left px-6 py-2.5 text-sm font-semibold transition-all flex items-center gap-3 ${activeTab === "calendar" ? "bg-blue-500/10 text-blue-400 border-r-2 border-blue-500" : "hover:bg-slate-800/50 hover:text-white"}`}><span className="text-lg">📅</span> My Calendar</button>
+          <button onClick={() => {setActiveTab("notepad"); setIsSidebarOpen(false);}} className={`text-left px-6 py-2.5 text-sm font-semibold transition-all flex items-center gap-3 ${activeTab === "notepad" ? "bg-blue-500/10 text-blue-400 border-r-2 border-blue-500" : "hover:bg-slate-800/50 hover:text-white"}`}><span className="text-lg">📝</span> Private Notepad</button>
+          <button onClick={() => {setActiveTab("request-leave"); setIsSidebarOpen(false);}} className={`text-left px-6 py-2.5 text-sm font-semibold transition-all flex items-center gap-3 ${activeTab === "request-leave" ? "bg-blue-500/10 text-blue-400 border-r-2 border-blue-500" : "hover:bg-slate-800/50 hover:text-white"}`}><span className="text-lg">🏖️</span> Request Leave</button>
 
           {/* CATEGORY 2: COMPANY & CULTURE */}
           <div className="text-[10px] font-black text-slate-500 tracking-widest uppercase mt-6 mb-2 px-6">Company & Culture</div>
-          
-          <button onClick={() => setActiveTab("news")} className={`text-left px-6 py-2.5 text-sm font-semibold transition-all flex items-center gap-3 ${activeTab === "news" ? "bg-blue-500/10 text-blue-400 border-r-2 border-blue-500" : "hover:bg-slate-800/50 hover:text-white"}`}>
-            <span className="text-lg">📰</span> News & Updates
-          </button>
-          
-          <button onClick={() => setActiveTab("culture")} className={`text-left px-6 py-2.5 text-sm font-semibold transition-all flex items-center gap-3 ${activeTab === "culture" ? "bg-blue-500/10 text-blue-400 border-r-2 border-blue-500" : "hover:bg-slate-800/50 hover:text-white"}`}>
-            <span className="text-lg">🔥</span> Pulse & Kudos
-          </button>
-          
-          <button onClick={() => setActiveTab("social")} className={`text-left px-6 py-2.5 text-sm font-semibold transition-all flex items-center gap-3 ${activeTab === "social" ? "bg-blue-500/10 text-blue-400 border-r-2 border-blue-500" : "hover:bg-slate-800/50 hover:text-white"}`}>
-            <span className="text-lg">🤝</span> Clubs & Mentors
-          </button>
-
-          <button onClick={() => setActiveTab("feedback")} className={`text-left px-6 py-2.5 text-sm font-semibold transition-all flex items-center gap-3 ${activeTab === "feedback" ? "bg-blue-500/10 text-blue-400 border-r-2 border-blue-500" : "hover:bg-slate-800/50 hover:text-white"}`}>
-            <span className="text-lg">💡</span> Feedback Box
-          </button>
+          <button onClick={() => {setActiveTab("news"); setIsSidebarOpen(false);}} className={`text-left px-6 py-2.5 text-sm font-semibold transition-all flex items-center gap-3 ${activeTab === "news" ? "bg-blue-500/10 text-blue-400 border-r-2 border-blue-500" : "hover:bg-slate-800/50 hover:text-white"}`}><span className="text-lg">📰</span> News & Updates</button>
+          <button onClick={() => {setActiveTab("culture"); setIsSidebarOpen(false);}} className={`text-left px-6 py-2.5 text-sm font-semibold transition-all flex items-center gap-3 ${activeTab === "culture" ? "bg-blue-500/10 text-blue-400 border-r-2 border-blue-500" : "hover:bg-slate-800/50 hover:text-white"}`}><span className="text-lg">🔥</span> Pulse & Kudos</button>
+          <button onClick={() => {setActiveTab("social"); setIsSidebarOpen(false);}} className={`text-left px-6 py-2.5 text-sm font-semibold transition-all flex items-center gap-3 ${activeTab === "social" ? "bg-blue-500/10 text-blue-400 border-r-2 border-blue-500" : "hover:bg-slate-800/50 hover:text-white"}`}><span className="text-lg">🤝</span> Clubs & Mentors</button>
+          <button onClick={() => {setActiveTab("feedback"); setIsSidebarOpen(false);}} className={`text-left px-6 py-2.5 text-sm font-semibold transition-all flex items-center gap-3 ${activeTab === "feedback" ? "bg-blue-500/10 text-blue-400 border-r-2 border-blue-500" : "hover:bg-slate-800/50 hover:text-white"}`}><span className="text-lg">💡</span> Feedback Box</button>
 
           {/* CATEGORY 3: OPERATIONS & SUPPORT */}
           <div className="text-[10px] font-black text-slate-500 tracking-widest uppercase mt-6 mb-2 px-6">Operations</div>
-
-          <button onClick={() => setActiveTab("attendance")} className={`text-left px-6 py-2.5 text-sm font-semibold transition-all flex items-center gap-3 ${activeTab === "attendance" ? "bg-blue-500/10 text-blue-400 border-r-2 border-blue-500" : "hover:bg-slate-800/50 hover:text-white"}`}>
-            <span className="text-lg">⏱️</span> Time & Location
-          </button>
-
-          <button onClick={() => setActiveTab("timesheets")} className={`text-left px-6 py-2.5 text-sm font-semibold transition-all flex items-center gap-3 ${activeTab === "timesheets" ? "bg-blue-500/10 text-blue-400 border-r-2 border-blue-500" : "hover:bg-slate-800/50 hover:text-white"}`}>
-            <span className="text-lg">📊</span> Timesheets
-          </button>
-
-          <button onClick={() => setActiveTab("ithub")} className={`text-left px-6 py-2.5 text-sm font-semibold transition-all flex items-center gap-3 ${activeTab === "ithub" ? "bg-blue-500/10 text-blue-400 border-r-2 border-blue-500" : "hover:bg-slate-800/50 hover:text-white"}`}>
-            <span className="text-lg">💻</span> IT Helpdesk
-          </button>
-
-          <button onClick={() => setActiveTab("learning")} className={`text-left px-6 py-2.5 text-sm font-semibold transition-all flex items-center gap-3 ${activeTab === "learning" ? "bg-blue-500/10 text-blue-400 border-r-2 border-blue-500" : "hover:bg-slate-800/50 hover:text-white"}`}>
-            <span className="text-lg">🎓</span> Learning Hub
-          </button>
-
-          <button onClick={() => setActiveTab("policies")} className={`text-left px-6 py-2.5 text-sm font-semibold transition-all flex items-center gap-3 ${activeTab === "policies" ? "bg-blue-500/10 text-blue-400 border-r-2 border-blue-500" : "hover:bg-slate-800/50 hover:text-white"}`}>
-            <span className="text-lg">✍️</span> Handbooks
-          </button>
+          <button onClick={() => {setActiveTab("attendance"); setIsSidebarOpen(false);}} className={`text-left px-6 py-2.5 text-sm font-semibold transition-all flex items-center gap-3 ${activeTab === "attendance" ? "bg-blue-500/10 text-blue-400 border-r-2 border-blue-500" : "hover:bg-slate-800/50 hover:text-white"}`}><span className="text-lg">⏱️</span> Time & Location</button>
+          <button onClick={() => {setActiveTab("timesheets"); setIsSidebarOpen(false);}} className={`text-left px-6 py-2.5 text-sm font-semibold transition-all flex items-center gap-3 ${activeTab === "timesheets" ? "bg-blue-500/10 text-blue-400 border-r-2 border-blue-500" : "hover:bg-slate-800/50 hover:text-white"}`}><span className="text-lg">📊</span> Timesheets</button>
+          <button onClick={() => {setActiveTab("ithub"); setIsSidebarOpen(false);}} className={`text-left px-6 py-2.5 text-sm font-semibold transition-all flex items-center gap-3 ${activeTab === "ithub" ? "bg-blue-500/10 text-blue-400 border-r-2 border-blue-500" : "hover:bg-slate-800/50 hover:text-white"}`}><span className="text-lg">💻</span> IT Helpdesk</button>
+          <button onClick={() => {setActiveTab("learning"); setIsSidebarOpen(false);}} className={`text-left px-6 py-2.5 text-sm font-semibold transition-all flex items-center gap-3 ${activeTab === "learning" ? "bg-blue-500/10 text-blue-400 border-r-2 border-blue-500" : "hover:bg-slate-800/50 hover:text-white"}`}><span className="text-lg">🎓</span> Learning Hub</button>
+          <button onClick={() => {setActiveTab("policies"); setIsSidebarOpen(false);}} className={`text-left px-6 py-2.5 text-sm font-semibold transition-all flex items-center gap-3 ${activeTab === "policies" ? "bg-blue-500/10 text-blue-400 border-r-2 border-blue-500" : "hover:bg-slate-800/50 hover:text-white"}`}><span className="text-lg">✍️</span> Handbooks</button>
         </div>
 
         {/* USER PROFILE FOOTER */}
