@@ -2,6 +2,8 @@ import { useState, useEffect } from "react";
 import { auth, provider, db } from "./firebase";
 import { signInWithPopup, signOut, onAuthStateChanged } from "firebase/auth";
 import { collection, getDocs, query, doc, updateDoc, where, addDoc, serverTimestamp } from "firebase/firestore";
+
+// --- IMPORT ALL OUR NEW ENTERPRISE MODULES ---
 import NewsFeed from "./NewsFeed";
 import FeedbackSystem from "./FeedbackSystem";
 import LearningHub from "./LearningHub";
@@ -17,21 +19,22 @@ import SafetyDirectory from "./SafetyDirectory";
 import MyCalendar from "./MyCalendar";
 import Timesheets from "./Timesheets";
 import OnCallRoster from "./OnCallRoster";
-import ComplianceAdmin from "./ComplianceAdmin";
 
 export default function EmployeePortal() {
   const [user, setUser] = useState(null);
   const [staffData, setStaffData] = useState(null); 
   const [loadingAuth, setLoadingAuth] = useState(true);
   
+  // Mobile Sidebar & Navigation State
+  const [activeTab, setActiveTab] = useState("my-tasks"); 
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  
+  // Core Data States
   const [tasks, setTasks] = useState([]);
   const [leaves, setLeaves] = useState([]);
-  const [activeTab, setActiveTab] = useState("my-tasks"); 
   const [toast, setToast] = useState({ show: false, message: "", type: "success" });
 
   const [newLeave, setNewLeave] = useState({ startDate: "", endDate: "", reason: "", type: "Sick Leave" });
-  
-  // NEW: Profile Photo Upload State
   const [isUploading, setIsUploading] = useState(false);
 
   const showToast = (message, type = "success") => {
@@ -47,7 +50,6 @@ export default function EmployeePortal() {
         if (!snap.empty) {
           const profile = snap.docs[0].data();
 
-          // 🚨 FIX: Redirect instead of Sign Out
           if (profile.role !== "User") {
             alert("You are an Admin/Director. Redirecting to your Master Workspace...");
             window.location.href = profile.role === "Super Admin" ? "/director" : "/admin";
@@ -67,11 +69,9 @@ export default function EmployeePortal() {
     return () => unsubscribe();
   }, []);
 
-  // SECURE FETCH: Only pull data belonging to this specific user
   const fetchAllData = async (userEmail) => {
     try {
       const snapTasks = await getDocs(query(collection(db, "tasks"), where("assignedToEmail", "==", userEmail)));
-      // Sort locally to avoid complex Firestore indexes
       const sortedTasks = snapTasks.docs.map(d => ({ id: d.id, ...d.data() })).sort((a, b) => b.createdAt - a.createdAt);
       setTasks(sortedTasks);
 
@@ -100,7 +100,6 @@ export default function EmployeePortal() {
     } catch (error) { showToast("Failed to submit leave", "error"); }
   };
 
-  // NEW: Upload Photo to Cloudinary and save to Staff Profile
   const handlePhotoUpload = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -124,26 +123,32 @@ export default function EmployeePortal() {
     setIsUploading(false);
   };
 
-  if (loadingAuth) return <div className="min-h-screen bg-gray-50 flex items-center justify-center text-xs font-bold uppercase tracking-widest">Verifying Access...</div>;
+  if (loadingAuth) return <div className="min-h-screen bg-slate-50 flex items-center justify-center text-xs font-bold uppercase tracking-widest text-slate-500">Verifying Credentials...</div>;
 
   if (!user || !staffData) return (
-    <div className="min-h-screen bg-[#081f2c] flex items-center justify-center font-body p-6">
-      <div className="bg-white p-12 rounded-sm shadow-2xl w-full max-w-md border-t-4 border-[#10b981] text-center">
-        <div className="w-16 h-16 bg-[#10b981] text-white font-black text-2xl flex items-center justify-center rounded-sm mx-auto mb-6">RDS</div>
-        <h1 className="font-display text-2xl font-black text-gray-900 mb-2">Staff Portal</h1>
-        <button onClick={() => signInWithPopup(auth, provider)} className="w-full py-4 mt-6 border border-gray-300 hover:bg-gray-50 text-gray-700 font-bold text-xs tracking-widest uppercase transition-all rounded-sm">Employee Login</button>
+    <div className="min-h-screen bg-slate-900 flex items-center justify-center font-body p-6">
+      <div className="bg-white p-12 rounded-xl shadow-2xl w-full max-w-md text-center">
+        <div className="w-16 h-16 bg-blue-600 text-white font-black text-2xl flex items-center justify-center rounded-lg mx-auto mb-6 shadow-lg">RDS</div>
+        <h1 className="font-display text-2xl font-black text-slate-900 mb-2">Employee Portal</h1>
+        <p className="text-slate-500 text-sm mb-8">Secure Access Hub</p>
+        <button onClick={() => signInWithPopup(auth, provider)} className="w-full py-4 border border-slate-300 hover:bg-slate-50 text-slate-700 font-bold text-xs tracking-widest uppercase transition-all rounded-lg shadow-sm">Secure Google Login</button>
       </div>
     </div>
   );
 
   return (
-    <div className="min-h-screen bg-gray-100 font-body flex">
-      <div className={`fixed bottom-8 right-8 z-[100] flex items-center gap-3 px-6 py-4 rounded-sm shadow-2xl bg-white border-l-4 transition-all duration-300 ${toast.show ? "translate-y-0 opacity-100" : "translate-y-10 opacity-0 pointer-events-none"} ${toast.type === 'success' ? 'border-[#10b981]' : 'border-red-500'}`}>
-        <span className="text-sm font-bold text-gray-800 tracking-wide">{toast.message}</span>
-      </div>
+    <div className="min-h-screen bg-slate-50 font-body flex">
+      
+      {toast.show && (
+        <div className="fixed bottom-8 right-8 z-[100] bg-slate-900 text-white px-6 py-4 rounded-lg shadow-2xl animate-fade-in flex items-center gap-3">
+          <span className="text-green-400">✓</span> <span className="text-sm font-bold tracking-wide">{toast.message}</span>
+        </div>
+      )}
+
+      {isSidebarOpen && <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-40 md:hidden" onClick={() => setIsSidebarOpen(false)} />}
 
       <aside className={`w-64 bg-slate-900 text-slate-300 flex flex-col shadow-2xl z-50 fixed md:static inset-y-0 left-0 transform transition-transform duration-300 ${isSidebarOpen ? "translate-x-0" : "-translate-x-full"} md:translate-x-0 overflow-y-auto`}>
-        {/* BRANDING HEADER */}
+        
         <div className="p-6 border-b border-slate-800 flex items-center gap-3 sticky top-0 bg-slate-900 z-10">
           <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-indigo-800 text-white font-black flex items-center justify-center rounded-lg shadow-lg text-lg">RDS</div>
           <div>
@@ -154,30 +159,31 @@ export default function EmployeePortal() {
 
         <div className="flex-1 py-6 flex flex-col gap-1 overflow-y-auto custom-scrollbar">
           
-          {/* CATEGORY 1: MY WORKSPACE */}
           <div className="text-[10px] font-black text-slate-500 tracking-widest uppercase mt-2 mb-2 px-6">My Workspace</div>
           <button onClick={() => {setActiveTab("my-tasks"); setIsSidebarOpen(false);}} className={`text-left px-6 py-2.5 text-sm font-semibold transition-all flex items-center gap-3 ${activeTab === "my-tasks" ? "bg-blue-500/10 text-blue-400 border-r-2 border-blue-500" : "hover:bg-slate-800/50 hover:text-white"}`}><span className="text-lg">✅</span> My Tasks</button>
           <button onClick={() => {setActiveTab("calendar"); setIsSidebarOpen(false);}} className={`text-left px-6 py-2.5 text-sm font-semibold transition-all flex items-center gap-3 ${activeTab === "calendar" ? "bg-blue-500/10 text-blue-400 border-r-2 border-blue-500" : "hover:bg-slate-800/50 hover:text-white"}`}><span className="text-lg">📅</span> My Calendar</button>
           <button onClick={() => {setActiveTab("notepad"); setIsSidebarOpen(false);}} className={`text-left px-6 py-2.5 text-sm font-semibold transition-all flex items-center gap-3 ${activeTab === "notepad" ? "bg-blue-500/10 text-blue-400 border-r-2 border-blue-500" : "hover:bg-slate-800/50 hover:text-white"}`}><span className="text-lg">📝</span> Private Notepad</button>
           <button onClick={() => {setActiveTab("request-leave"); setIsSidebarOpen(false);}} className={`text-left px-6 py-2.5 text-sm font-semibold transition-all flex items-center gap-3 ${activeTab === "request-leave" ? "bg-blue-500/10 text-blue-400 border-r-2 border-blue-500" : "hover:bg-slate-800/50 hover:text-white"}`}><span className="text-lg">🏖️</span> Request Leave</button>
 
-          {/* CATEGORY 2: COMPANY & CULTURE */}
           <div className="text-[10px] font-black text-slate-500 tracking-widest uppercase mt-6 mb-2 px-6">Company & Culture</div>
           <button onClick={() => {setActiveTab("news"); setIsSidebarOpen(false);}} className={`text-left px-6 py-2.5 text-sm font-semibold transition-all flex items-center gap-3 ${activeTab === "news" ? "bg-blue-500/10 text-blue-400 border-r-2 border-blue-500" : "hover:bg-slate-800/50 hover:text-white"}`}><span className="text-lg">📰</span> News & Updates</button>
           <button onClick={() => {setActiveTab("culture"); setIsSidebarOpen(false);}} className={`text-left px-6 py-2.5 text-sm font-semibold transition-all flex items-center gap-3 ${activeTab === "culture" ? "bg-blue-500/10 text-blue-400 border-r-2 border-blue-500" : "hover:bg-slate-800/50 hover:text-white"}`}><span className="text-lg">🔥</span> Pulse & Kudos</button>
           <button onClick={() => {setActiveTab("social"); setIsSidebarOpen(false);}} className={`text-left px-6 py-2.5 text-sm font-semibold transition-all flex items-center gap-3 ${activeTab === "social" ? "bg-blue-500/10 text-blue-400 border-r-2 border-blue-500" : "hover:bg-slate-800/50 hover:text-white"}`}><span className="text-lg">🤝</span> Clubs & Mentors</button>
           <button onClick={() => {setActiveTab("feedback"); setIsSidebarOpen(false);}} className={`text-left px-6 py-2.5 text-sm font-semibold transition-all flex items-center gap-3 ${activeTab === "feedback" ? "bg-blue-500/10 text-blue-400 border-r-2 border-blue-500" : "hover:bg-slate-800/50 hover:text-white"}`}><span className="text-lg">💡</span> Feedback Box</button>
 
-          {/* CATEGORY 3: OPERATIONS & SUPPORT */}
-          <div className="text-[10px] font-black text-slate-500 tracking-widest uppercase mt-6 mb-2 px-6">Operations</div>
+          <div className="text-[10px] font-black text-slate-500 tracking-widest uppercase mt-6 mb-2 px-6">Operations & Tools</div>
           <button onClick={() => {setActiveTab("attendance"); setIsSidebarOpen(false);}} className={`text-left px-6 py-2.5 text-sm font-semibold transition-all flex items-center gap-3 ${activeTab === "attendance" ? "bg-blue-500/10 text-blue-400 border-r-2 border-blue-500" : "hover:bg-slate-800/50 hover:text-white"}`}><span className="text-lg">⏱️</span> Time & Location</button>
           <button onClick={() => {setActiveTab("timesheets"); setIsSidebarOpen(false);}} className={`text-left px-6 py-2.5 text-sm font-semibold transition-all flex items-center gap-3 ${activeTab === "timesheets" ? "bg-blue-500/10 text-blue-400 border-r-2 border-blue-500" : "hover:bg-slate-800/50 hover:text-white"}`}><span className="text-lg">📊</span> Timesheets</button>
           <button onClick={() => {setActiveTab("ithub"); setIsSidebarOpen(false);}} className={`text-left px-6 py-2.5 text-sm font-semibold transition-all flex items-center gap-3 ${activeTab === "ithub" ? "bg-blue-500/10 text-blue-400 border-r-2 border-blue-500" : "hover:bg-slate-800/50 hover:text-white"}`}><span className="text-lg">💻</span> IT Helpdesk</button>
           <button onClick={() => {setActiveTab("learning"); setIsSidebarOpen(false);}} className={`text-left px-6 py-2.5 text-sm font-semibold transition-all flex items-center gap-3 ${activeTab === "learning" ? "bg-blue-500/10 text-blue-400 border-r-2 border-blue-500" : "hover:bg-slate-800/50 hover:text-white"}`}><span className="text-lg">🎓</span> Learning Hub</button>
+          <button onClick={() => {setActiveTab("performance"); setIsSidebarOpen(false);}} className={`text-left px-6 py-2.5 text-sm font-semibold transition-all flex items-center gap-3 ${activeTab === "performance" ? "bg-blue-500/10 text-blue-400 border-r-2 border-blue-500" : "hover:bg-slate-800/50 hover:text-white"}`}><span className="text-lg">🎯</span> Goals & OKRs</button>
           <button onClick={() => {setActiveTab("policies"); setIsSidebarOpen(false);}} className={`text-left px-6 py-2.5 text-sm font-semibold transition-all flex items-center gap-3 ${activeTab === "policies" ? "bg-blue-500/10 text-blue-400 border-r-2 border-blue-500" : "hover:bg-slate-800/50 hover:text-white"}`}><span className="text-lg">✍️</span> Handbooks</button>
+          
+          <div className="text-[10px] font-black text-slate-500 tracking-widest uppercase mt-6 mb-2 px-6">Safety</div>
+          <button onClick={() => {setActiveTab("safety"); setIsSidebarOpen(false);}} className={`text-left px-6 py-2.5 text-sm font-semibold transition-all flex items-center gap-3 ${activeTab === "safety" ? "bg-red-500/10 text-red-400 border-r-2 border-red-500" : "hover:bg-slate-800/50 hover:text-red-400"}`}><span className="text-lg">🚑</span> First Responders</button>
+          <button onClick={() => {setActiveTab("oncall"); setIsSidebarOpen(false);}} className={`text-left px-6 py-2.5 text-sm font-semibold transition-all flex items-center gap-3 ${activeTab === "oncall" ? "bg-red-500/10 text-red-400 border-r-2 border-red-500" : "hover:bg-slate-800/50 hover:text-red-400"}`}><span className="text-lg">🌙</span> On-Call Roster</button>
         </div>
 
-        {/* USER PROFILE FOOTER */}
         <div className="p-6 border-t border-slate-800 bg-slate-900/50">
           <div className="flex items-center gap-3 mb-4 cursor-pointer hover:opacity-80 transition-opacity" onClick={() => setActiveTab("my-profile")}>
             {staffData.photoUrl ? (
@@ -194,85 +200,64 @@ export default function EmployeePortal() {
         </div>
       </aside>
 
-      <main className="flex-1 h-screen overflow-y-auto p-8">
-        
-        {/* PROFILE TAB */}
-        {activeTab === "profile" && (
-          <div className="animate-fade-in max-w-2xl bg-white border border-gray-200 rounded-sm shadow-sm overflow-hidden p-8">
-            <h3 className="font-display text-2xl font-bold mb-6">Employee Profile</h3>
-            <div className="flex flex-col md:flex-row gap-8 items-start">
-              <div className="flex flex-col items-center gap-4">
-                <div className="w-32 h-32 rounded-full overflow-hidden border-4 border-gray-100 bg-gray-50 flex items-center justify-center shadow-inner relative group">
-                  {staffData.photoUrl ? (
-                    <img src={staffData.photoUrl} alt="Profile" className="w-full h-full object-cover" />
-                  ) : (
-                    <span className="text-4xl text-gray-300 font-black">{staffData.name.charAt(0)}</span>
-                  )}
-                  <label className="absolute inset-0 bg-black/50 hidden group-hover:flex items-center justify-center cursor-pointer transition-all">
-                     <span className="text-white text-xs font-bold uppercase tracking-widest text-center px-2">{isUploading ? "Uploading..." : "Change Photo"}</span>
-                     <input type="file" accept="image/*" onChange={handlePhotoUpload} disabled={isUploading} className="hidden" />
-                  </label>
+      <main className="flex-1 h-screen overflow-y-auto">
+        <header className="bg-white border-b border-gray-200 px-4 md:px-8 py-4 flex justify-between items-center sticky top-0 z-10 shadow-sm">
+          <div className="flex items-center gap-4">
+            <button onClick={() => setIsSidebarOpen(true)} className="md:hidden text-slate-700 text-2xl leading-none pb-1">☰</button>
+            <h2 className="font-display text-2xl font-black text-slate-900 capitalize">{activeTab.replace('-', ' ')}</h2>
+          </div>
+          <button onClick={() => fetchAllData(staffData.email)} className="text-[10px] font-bold text-slate-500 uppercase tracking-widest hover:text-blue-600 flex items-center gap-2">🔄 Refresh</button>
+        </header>
+
+        <div className="p-4 md:p-8 pb-20 max-w-7xl mx-auto">
+          
+          {/* PROFILE */}
+          {activeTab === "my-profile" && (
+            <div className="animate-fade-in max-w-2xl bg-white border border-gray-200 rounded-sm shadow-sm overflow-hidden p-8">
+              <h3 className="font-display text-2xl font-bold mb-6">Employee Profile</h3>
+              <div className="flex flex-col md:flex-row gap-8 items-start">
+                <div className="flex flex-col items-center gap-4">
+                  <div className="w-32 h-32 rounded-full overflow-hidden border-4 border-gray-100 bg-gray-50 flex items-center justify-center shadow-inner relative group">
+                    {staffData.photoUrl ? (
+                      <img src={staffData.photoUrl} alt="Profile" className="w-full h-full object-cover" />
+                    ) : (
+                      <span className="text-4xl text-gray-300 font-black">{staffData.name.charAt(0)}</span>
+                    )}
+                    <label className="absolute inset-0 bg-black/50 hidden group-hover:flex items-center justify-center cursor-pointer transition-all">
+                       <span className="text-white text-xs font-bold uppercase tracking-widest text-center px-2">{isUploading ? "Uploading..." : "Change Photo"}</span>
+                       <input type="file" accept="image/*" onChange={handlePhotoUpload} disabled={isUploading} className="hidden" />
+                    </label>
+                  </div>
                 </div>
-                <p className="text-[10px] text-gray-400 uppercase font-bold text-center">Click image to update<br/>Max 2MB (JPG/PNG)</p>
-              </div>
-              
-              <div className="flex-1 space-y-4 w-full">
-                <div className="bg-gray-50 p-4 rounded-sm border border-gray-100">
-                  <div className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Full Name</div>
-                  <div className="text-gray-900 font-bold text-lg">{staffData.name}</div>
-                </div>
-                <div className="bg-gray-50 p-4 rounded-sm border border-gray-100">
-                  <div className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Company Login Email</div>
-                  <div className="text-gray-900 font-bold">{staffData.email}</div>
-                </div>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="flex-1 space-y-4 w-full">
                   <div className="bg-gray-50 p-4 rounded-sm border border-gray-100">
-                    <div className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Employee ID</div>
-                    <div className="text-corp-blue font-mono font-bold">{staffData.employeeId}</div>
+                    <div className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Full Name</div>
+                    <div className="text-gray-900 font-bold text-lg">{staffData.name}</div>
                   </div>
                   <div className="bg-gray-50 p-4 rounded-sm border border-gray-100">
-                    <div className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Access Role</div>
-                    <div className="text-gray-900 font-bold">{staffData.role}</div>
+                    <div className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Company Login Email</div>
+                    <div className="text-gray-900 font-bold">{staffData.email}</div>
                   </div>
                 </div>
               </div>
             </div>
-          </div>
-        )}
+          )}
 
-        {activeTab === "news" && <NewsFeed role={staffData.role} userName={staffData.name} />}
-        {activeTab === "feedback" && <FeedbackSystem role={staffData.role} userEmail={staffData.email} userName={staffData.name} />}
-        {activeTab === "learning" && <LearningHub role={staffData.role} />}
-        {activeTab === "notepad" && <PrivateNotepad userEmail={staffData.email} />}
-        {activeTab === "attendance" && <AttendanceTracker userEmail={staffData.email} userName={staffData.name} role={staffData.role} />}
-        {activeTab === "culture" && <CompanyCulture userName={staffData.name} />}
-        {activeTab === "policies" && <PolicySignatures userName={staffData.name} role={staffData.role} />}
-        {activeTab === "social" && <SocialHub userName={staffData.name} userEmail={staffData.email} />}
-        {activeTab === "operations" && <OperationsHub role={staffData.role} userName={staffData.name} />}
-        {activeTab === "analytics" && <HRAnalytics role={staffData.role} />}
-        {activeTab === "calendar" && <MyCalendar userEmail={staffData.email} userName={staffData.name} />}
-        {activeTab === "performance" && <PerformanceOKRs role={staffData.role} userName={staffData.name} />}
-        {activeTab === "ithub" && <ITHub role={staffData.role} userName={staffData.name} />}
-        {activeTab === "safety" && <SafetyDirectory role={staffData.role} />}
-        {activeTab === "timesheets" && <Timesheets role={staffData.role} userName={staffData.name} userEmail={staffData.email} />}
-        {activeTab === "oncall" && <OnCallRoster role={staffData.role} />}
-        {activeTab === "compliance" && <ComplianceAdmin role={staffData.role} userName={staffData.name} />}
-
-        {/* MY TASKS */}
-        {activeTab === "my-tasks" && (
-          <div className="animate-fade-in bg-white border border-gray-200 rounded-sm shadow-sm overflow-hidden">
-             <div className="p-4 bg-gray-50 border-b border-gray-200 font-bold text-sm text-gray-800">Tasks Assigned to Me</div>
-             <table className="w-full text-left border-collapse">
+          {/* MY TASKS */}
+          {activeTab === "my-tasks" && (
+            <div className="animate-fade-in bg-white border border-gray-200 rounded-sm shadow-sm overflow-hidden">
+              <div className="p-4 bg-slate-50 border-b border-gray-200 font-bold text-sm text-slate-800">Tasks Assigned to Me</div>
+              <table className="w-full text-left border-collapse">
                 <thead><tr className="border-b border-gray-200"><th className="px-6 py-3 text-[10px] text-gray-500 uppercase font-bold tracking-widest">Task Details</th><th className="px-6 py-3 text-[10px] text-gray-500 uppercase font-bold tracking-widest">Assigned By</th><th className="px-6 py-3 text-[10px] text-gray-500 uppercase font-bold tracking-widest">My Status</th></tr></thead>
                 <tbody className="divide-y divide-gray-100">
                   {tasks.map(task => (
-                    <tr key={task.id} className="hover:bg-gray-50">
+                    <tr key={task.id} className="hover:bg-slate-50">
                       <td className="px-6 py-4">
-                        <div className="font-bold text-sm text-gray-900 mb-1">{task.title}</div>
-                        <div className="text-xs text-gray-600 mb-2 whitespace-pre-wrap">{task.description}</div>
+                        <div className="font-bold text-sm text-slate-900 mb-1">{task.title}</div>
+                        <div className="text-xs text-slate-600 mb-2 whitespace-pre-wrap">{task.description}</div>
                         <div className="text-[10px] font-bold text-red-600 uppercase tracking-widest bg-red-50 inline-block px-2 py-1 rounded">Due: {task.deadline}</div>
                       </td>
-                      <td className="px-6 py-4 text-xs font-bold text-gray-600">{task.assignedBy}</td>
+                      <td className="px-6 py-4 text-xs font-bold text-slate-600">{task.assignedBy}</td>
                       <td className="px-6 py-4">
                         <select value={task.status} onChange={(e) => updateTaskStatus(task.id, e.target.value)} className={`text-[10px] font-black tracking-widest uppercase rounded-sm px-3 py-2 border outline-none cursor-pointer ${task.status === 'Pending' ? 'bg-yellow-50 text-yellow-700' : task.status === 'In Progress' ? 'bg-blue-50 text-blue-700' : 'bg-green-50 text-green-700'}`}>
                           <option>Pending</option><option>In Progress</option><option>Completed</option>
@@ -280,45 +265,64 @@ export default function EmployeePortal() {
                       </td>
                     </tr>
                   ))}
-                  {tasks.length === 0 && <tr><td colSpan="3" className="px-6 py-12 text-center text-gray-400 text-sm font-bold uppercase tracking-widest">You have no assigned tasks.</td></tr>}
+                  {tasks.length === 0 && <tr><td colSpan="3" className="px-6 py-12 text-center text-slate-400 text-sm font-bold uppercase tracking-widest">You have no assigned tasks.</td></tr>}
                 </tbody>
-             </table>
-          </div>
-        )}
+              </table>
+            </div>
+          )}
 
-        {/* MY LEAVES */}
-        {activeTab === "my-leaves" && (
-          <div className="animate-fade-in grid lg:grid-cols-3 gap-8">
-             <div className="lg:col-span-1">
-               <div className="bg-white p-6 border border-gray-200 rounded-sm shadow-sm">
-                 <h3 className="font-display text-xl font-bold mb-6">Apply for Leave</h3>
-                 <form onSubmit={applyForLeave} className="space-y-4">
-                   <div><label className="block text-[10px] font-bold uppercase text-gray-500 mb-1">Type</label><select value={newLeave.type} onChange={e => setNewLeave({...newLeave, type: e.target.value})} className="w-full px-3 py-2 border border-gray-300 rounded text-sm bg-white outline-none"><option>Sick Leave</option><option>Casual Leave</option><option>Vacation</option></select></div>
-                   <div><label className="block text-[10px] font-bold uppercase text-gray-500 mb-1">Start Date</label><input type="date" required value={newLeave.startDate} onChange={e => setNewLeave({...newLeave, startDate: e.target.value})} className="w-full px-3 py-2 border border-gray-300 rounded text-sm outline-none" /></div>
-                   <div><label className="block text-[10px] font-bold uppercase text-gray-500 mb-1">End Date</label><input type="date" required value={newLeave.endDate} onChange={e => setNewLeave({...newLeave, endDate: e.target.value})} className="w-full px-3 py-2 border border-gray-300 rounded text-sm outline-none" /></div>
-                   <div><label className="block text-[10px] font-bold uppercase text-gray-500 mb-1">Reason</label><textarea required rows="3" value={newLeave.reason} onChange={e => setNewLeave({...newLeave, reason: e.target.value})} className="w-full px-3 py-2 border border-gray-300 rounded text-sm outline-none resize-none" /></div>
-                   <button type="submit" className="w-full py-3 bg-[#10b981] hover:bg-green-600 text-white font-bold text-[10px] uppercase rounded transition-colors tracking-widest">Submit Request</button>
-                 </form>
+          {/* REQUEST LEAVE */}
+          {activeTab === "request-leave" && (
+            <div className="animate-fade-in grid lg:grid-cols-3 gap-8">
+               <div className="lg:col-span-1">
+                 <div className="bg-white p-6 border border-gray-200 rounded-sm shadow-sm">
+                   <h3 className="font-display text-xl font-bold mb-6 text-slate-900">New Request</h3>
+                   <form onSubmit={applyForLeave} className="space-y-4">
+                     <div><label className="block text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-1">Leave Type</label><select value={newLeave.type} onChange={e => setNewLeave({...newLeave, type: e.target.value})} className="w-full px-3 py-2 border border-gray-300 rounded text-sm outline-none bg-white"><option>Sick Leave</option><option>Casual Leave</option><option>Vacation</option></select></div>
+                     <div><label className="block text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-1">Start Date</label><input type="date" required value={newLeave.startDate} onChange={e => setNewLeave({...newLeave, startDate: e.target.value})} className="w-full px-3 py-2 border border-gray-300 rounded text-sm outline-none" /></div>
+                     <div><label className="block text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-1">End Date</label><input type="date" required value={newLeave.endDate} onChange={e => setNewLeave({...newLeave, endDate: e.target.value})} className="w-full px-3 py-2 border border-gray-300 rounded text-sm outline-none" /></div>
+                     <div><label className="block text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-1">Reason</label><textarea required rows="3" value={newLeave.reason} onChange={e => setNewLeave({...newLeave, reason: e.target.value})} className="w-full px-3 py-2 border border-gray-300 rounded text-sm outline-none resize-none" /></div>
+                     <button type="submit" className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold text-[10px] uppercase tracking-widest rounded mt-4 transition-colors">Submit Request</button>
+                   </form>
+                 </div>
                </div>
-             </div>
-             <div className="lg:col-span-2">
-               <div className="bg-white border border-gray-200 rounded-sm shadow-sm overflow-hidden">
-                  <div className="p-4 bg-gray-50 border-b border-gray-200 font-bold text-sm text-gray-800">My Leave History</div>
-                  <table className="w-full text-left border-collapse">
-                    <thead><tr className="border-b border-gray-200"><th className="px-6 py-3 text-[10px] text-gray-500 uppercase font-bold tracking-widest">Dates & Type</th><th className="px-6 py-3 text-[10px] text-gray-500 uppercase font-bold tracking-widest">Status</th></tr></thead>
-                    <tbody className="divide-y divide-gray-100">
-                      {leaves.map(leave => (
-                        <tr key={leave.id} className="hover:bg-gray-50">
-                          <td className="px-6 py-4"><div className="font-bold text-sm text-gray-900">{new Date(leave.startDate).toLocaleDateString('en-IN')} to {new Date(leave.endDate).toLocaleDateString('en-IN')}</div><div className="text-[10px] font-black uppercase text-gray-500 mt-1 mb-2">{leave.type}</div><div className="text-xs text-gray-600 italic">"{leave.reason}"</div></td>
-                          <td className="px-6 py-4"><div className={`inline-block px-3 py-1 rounded text-[10px] font-black uppercase ${leave.status === 'Approved' ? 'bg-green-100 text-green-700' : leave.status === 'Rejected' ? 'bg-red-100 text-red-700' : 'bg-yellow-100 text-yellow-700'}`}>{leave.status}</div></td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+               <div className="lg:col-span-2">
+                 <div className="bg-white border border-gray-200 rounded-sm shadow-sm overflow-hidden">
+                    <div className="p-4 bg-slate-50 border-b border-gray-200 font-bold text-sm text-slate-800">My Leave History</div>
+                    <table className="w-full text-left border-collapse">
+                      <thead><tr className="border-b border-gray-200"><th className="px-4 py-3 text-[10px] text-gray-500 uppercase tracking-widest">Type & Dates</th><th className="px-4 py-3 text-[10px] text-gray-500 uppercase tracking-widest">Reason</th><th className="px-4 py-3 text-[10px] text-gray-500 uppercase tracking-widest">Status</th></tr></thead>
+                      <tbody className="divide-y divide-gray-100">
+                        {leaves.map(leave => (
+                          <tr key={leave.id} className="hover:bg-slate-50">
+                            <td className="px-4 py-3"><div className="font-bold text-sm text-slate-900">{new Date(leave.startDate).toLocaleDateString('en-IN')} to {new Date(leave.endDate).toLocaleDateString('en-IN')}</div><div className="text-[10px] text-slate-500 mt-1 uppercase tracking-widest font-bold">{leave.type}</div></td>
+                            <td className="px-4 py-3 text-xs text-slate-600 whitespace-pre-wrap">{leave.reason}</td>
+                            <td className="px-4 py-3"><span className={`inline-block px-2 py-1 rounded text-[10px] font-black uppercase tracking-widest ${leave.status === 'Approved' ? 'bg-green-100 text-green-700' : leave.status === 'Rejected' ? 'bg-red-100 text-red-700' : 'bg-yellow-100 text-yellow-700'}`}>{leave.status}</span></td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                 </div>
                </div>
-             </div>
-          </div>
-        )}
+            </div>
+          )}
+
+          {/* PLUGINS */}
+          {activeTab === "news" && <NewsFeed role={staffData.role} userName={staffData.name} />}
+          {activeTab === "feedback" && <FeedbackSystem role={staffData.role} userEmail={staffData.email} userName={staffData.name} />}
+          {activeTab === "learning" && <LearningHub role={staffData.role} />}
+          {activeTab === "notepad" && <PrivateNotepad userEmail={staffData.email} />}
+          {activeTab === "attendance" && <AttendanceTracker userEmail={staffData.email} userName={staffData.name} role={staffData.role} />}
+          {activeTab === "culture" && <CompanyCulture userName={staffData.name} />}
+          {activeTab === "policies" && <PolicySignatures userName={staffData.name} role={staffData.role} />}
+          {activeTab === "social" && <SocialHub userName={staffData.name} userEmail={staffData.email} />}
+          {activeTab === "ithub" && <ITHub role={staffData.role} userName={staffData.name} />}
+          {activeTab === "calendar" && <MyCalendar userEmail={staffData.email} userName={staffData.name} />}
+          {activeTab === "performance" && <PerformanceOKRs role={staffData.role} userName={staffData.name} />}
+          {activeTab === "safety" && <SafetyDirectory role={staffData.role} />}
+          {activeTab === "timesheets" && <Timesheets role={staffData.role} userName={staffData.name} userEmail={staffData.email} />}
+          {activeTab === "oncall" && <OnCallRoster role={staffData.role} />}
+
+        </div>
       </main>
     </div>
   );
