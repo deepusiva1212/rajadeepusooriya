@@ -25,6 +25,7 @@ import IDCardButton from "./IDCardButton";
 import WeeklyReports from "./WeeklyReports";
 import OnboardingChecklist from "./OnboardingChecklist";
 import ChatWidget from "./ChatWidget";
+import SystemTour from "./SystemTour";
 
 export default function EmployeePortal() {
   const [user, setUser] = useState(null);
@@ -45,6 +46,8 @@ export default function EmployeePortal() {
 
   // 📢 EMERGENCY BROADCAST SYSTEM (Upgraded with Read Receipts)
   const [broadcasts, setBroadcasts] = useState([]);
+
+  const [manualTourTrigger, setManualTourTrigger] = useState(false);
 
   useEffect(() => {
     getDocs(query(collection(db, "broadcasts"), orderBy("createdAt", "desc"))).then(snap => {
@@ -302,6 +305,13 @@ export default function EmployeePortal() {
                   </div>
                   {/* 🪪 NEW DIGITAL ID BUTTON HERE */}
                   <IDCardButton staffData={staffData} />
+                  {/* 🔄 RESTART TOUR SETTINGS BUTTON */}
+               <button 
+                 onClick={() => setManualTourTrigger(true)}
+                 className="mt-4 w-full py-3 border border-slate-200 hover:bg-slate-50 text-slate-600 text-[10px] font-black uppercase tracking-widest rounded-lg transition-all flex justify-center items-center gap-2"
+               >
+                 <span>🧭</span> Restart System Tour
+               </button>
                 </div>
               </div>
             </div>
@@ -366,6 +376,11 @@ export default function EmployeePortal() {
 
         </div>
       </main>
+      <SystemTour 
+     userEmail={staffData.email} 
+     forceStart={manualTourTrigger} 
+     onClose={() => setManualTourTrigger(false)} 
+   />
       <ChatWidget userName={staffData.name} userEmail={staffData.email} />
     </div>
   );
