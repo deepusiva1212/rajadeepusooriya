@@ -26,6 +26,7 @@ import WeeklyReports from "./WeeklyReports";
 import OnboardingChecklist from "./OnboardingChecklist";
 import ChatWidget from "./ChatWidget";
 import SystemTour from "./SystemTour";
+import DashboardLayout from "./DashboardLayout";
 
 export default function EmployeePortal() {
   const [user, setUser] = useState(null);
@@ -176,71 +177,49 @@ export default function EmployeePortal() {
   );
 
   return (
-    <div className="min-h-screen bg-slate-50 font-body flex">
+    <DashboardLayout 
+      headerTitle="Workspace"
+      userName={staffData.name}
+      userEmail={staffData.email}
+      sidebarContent={
+        <>
+          {/* 1. PASTE YOUR SIDEBAR LOGO HERE (From your old lines 191-197) */}
+          <div className="p-6 border-b border-slate-800 flex items-center gap-3 sticky top-0 bg-slate-900 z-10">
+            <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-indigo-800 text-white font-black flex items-center justify-center rounded-lg shadow-lg text-lg">RDS</div>
+            <div>
+              <div className="font-bold tracking-widest uppercase text-[9px] text-blue-400">Raja Deepu Sooriya</div>
+              <div className="text-sm font-bold text-white tracking-wide">Workspace</div>
+            </div>
+          </div>
+
+          {/* 2. PASTE ALL YOUR BUTTONS HERE (From your old lines 199 downwards) */}
+          <div className="flex-1 py-6 flex flex-col gap-1 overflow-y-auto custom-scrollbar">
+            
+            <div className="text-[10px] font-black text-slate-500 tracking-widest uppercase mt-2 mb-2 px-6">My Workspace</div>
+            <button onClick={() => {setActiveTab("my-tasks"); setIsSidebarOpen(false);}} className={`text-left px-6 py-2.5 text-sm font-semibold transition-all flex items-center gap-3 ${activeTab === "my-tasks" ? "bg-blue-500/10 text-blue-400 border-r-2 border-blue-500" : "hover:bg-slate-800/50 hover:text-white"}`}>📋 My Tasks</button>
+            {/* ... KEEP PASTING THE REST OF YOUR SIDEBAR BUTTONS HERE ... */}
+            
+          </div>
+        </>
+      }
+    >
       
-      {toast.show && (
+      {/* 3. YOUR MAIN CONTENT GOES HERE */}
+      
+      {/* Keep your toast notification! */}
+      {toast?.show && (
         <div className="fixed bottom-8 right-8 z-[100] bg-slate-900 text-white px-6 py-4 rounded-lg shadow-2xl animate-fade-in flex items-center gap-3">
           <span className="text-green-400">✓</span> <span className="text-sm font-bold tracking-wide">{toast.message}</span>
         </div>
       )}
 
-      {isSidebarOpen && <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-40 md:hidden" onClick={() => setIsSidebarOpen(false)} />}
-
-      <aside className={`w-64 bg-slate-900 text-slate-300 flex flex-col shadow-2xl z-50 fixed md:static inset-y-0 left-0 transform transition-transform duration-300 ${isSidebarOpen ? "translate-x-0" : "-translate-x-full"} md:translate-x-0 overflow-y-auto`}>
-        <div className="p-6 border-b border-slate-800 flex items-center gap-3 sticky top-0 bg-slate-900 z-10">
-          <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-indigo-800 text-white font-black flex items-center justify-center rounded-lg shadow-lg text-lg">RDS</div>
-          <div>
-            <div className="font-bold tracking-widest uppercase text-[9px] text-blue-400">Raja Deepu Sooriya</div>
-            <div className="text-sm font-bold text-white tracking-wide">Workspace</div>
-          </div>
-        </div>
-
-        <div className="flex-1 py-6 flex flex-col gap-1 overflow-y-auto custom-scrollbar">
-          
-          <div className="text-[10px] font-black text-slate-500 tracking-widest uppercase mt-2 mb-2 px-6">My Workspace</div>
-
-          <button onClick={() => {setActiveTab("my-tasks"); setIsSidebarOpen(false);}} className={`text-left px-6 py-2.5 text-sm font-semibold transition-all flex items-center gap-3 ${activeTab === "my-tasks" ? "bg-blue-500/10 text-blue-400 border-r-2 border-blue-500" : "hover:bg-slate-800/50 hover:text-white"}`}><span className="text-lg">✅</span> My Tasks</button>
-          <button onClick={() => {setActiveTab("calendar"); setIsSidebarOpen(false);}} className={`text-left px-6 py-2.5 text-sm font-semibold transition-all flex items-center gap-3 ${activeTab === "calendar" ? "bg-blue-500/10 text-blue-400 border-r-2 border-blue-500" : "hover:bg-slate-800/50 hover:text-white"}`}><span className="text-lg">📅</span> My Calendar</button>
-          <button onClick={() => {setActiveTab("notepad"); setIsSidebarOpen(false);}} className={`text-left px-6 py-2.5 text-sm font-semibold transition-all flex items-center gap-3 ${activeTab === "notepad" ? "bg-blue-500/10 text-blue-400 border-r-2 border-blue-500" : "hover:bg-slate-800/50 hover:text-white"}`}><span className="text-lg">📝</span> Private Notepad</button>
-          <button onClick={() => {setActiveTab("request-leave"); setIsSidebarOpen(false);}} className={`text-left px-6 py-2.5 text-sm font-semibold transition-all flex items-center gap-3 ${activeTab === "request-leave" ? "bg-blue-500/10 text-blue-400 border-r-2 border-blue-500" : "hover:bg-slate-800/50 hover:text-white"}`}><span className="text-lg">🏖️</span> Request Leave</button>
-
-          <div className="text-[10px] font-black text-slate-500 tracking-widest uppercase mt-6 mb-2 px-6">Company & Culture</div>
-          <button onClick={() => {setActiveTab("news"); setIsSidebarOpen(false);}} className={`text-left px-6 py-2.5 text-sm font-semibold transition-all flex items-center gap-3 ${activeTab === "news" ? "bg-blue-500/10 text-blue-400 border-r-2 border-blue-500" : "hover:bg-slate-800/50 hover:text-white"}`}><span className="text-lg">📰</span> News & Updates</button>
-          <button onClick={() => {setActiveTab("culture"); setIsSidebarOpen(false);}} className={`text-left px-6 py-2.5 text-sm font-semibold transition-all flex items-center gap-3 ${activeTab === "culture" ? "bg-blue-500/10 text-blue-400 border-r-2 border-blue-500" : "hover:bg-slate-800/50 hover:text-white"}`}><span className="text-lg">🔥</span> Pulse & Kudos</button>
-          <button onClick={() => {setActiveTab("social"); setIsSidebarOpen(false);}} className={`text-left px-6 py-2.5 text-sm font-semibold transition-all flex items-center gap-3 ${activeTab === "social" ? "bg-blue-500/10 text-blue-400 border-r-2 border-blue-500" : "hover:bg-slate-800/50 hover:text-white"}`}><span className="text-lg">🤝</span> Clubs & Mentors</button>
-          <button onClick={() => {setActiveTab("feedback"); setIsSidebarOpen(false);}} className={`text-left px-6 py-2.5 text-sm font-semibold transition-all flex items-center gap-3 ${activeTab === "feedback" ? "bg-blue-500/10 text-blue-400 border-r-2 border-blue-500" : "hover:bg-slate-800/50 hover:text-white"}`}><span className="text-lg">💡</span> Feedback Box</button>
-          <button onClick={() => {setActiveTab("brand-assets"); setIsSidebarOpen(false);}} className={`text-left px-6 py-2.5 text-sm font-semibold transition-all flex items-center gap-3 ${activeTab === "brand-assets" ? "bg-blue-500/10 text-blue-400 border-r-2 border-blue-500" : "hover:bg-slate-800/50 hover:text-white"}`}><span className="text-lg">🎨</span> Brand Assets</button>
-
-          <div className="text-[10px] font-black text-slate-500 tracking-widest uppercase mt-6 mb-2 px-6">Operations & Tools</div>
-          <button onClick={() => {setActiveTab("attendance"); setIsSidebarOpen(false);}} className={`text-left px-6 py-2.5 text-sm font-semibold transition-all flex items-center gap-3 ${activeTab === "attendance" ? "bg-blue-500/10 text-blue-400 border-r-2 border-blue-500" : "hover:bg-slate-800/50 hover:text-white"}`}><span className="text-lg">⏱️</span> Time & Location</button>
-          <button onClick={() => {setActiveTab("timesheets"); setIsSidebarOpen(false);}} className={`text-left px-6 py-2.5 text-sm font-semibold transition-all flex items-center gap-3 ${activeTab === "timesheets" ? "bg-blue-500/10 text-blue-400 border-r-2 border-blue-500" : "hover:bg-slate-800/50 hover:text-white"}`}><span className="text-lg">📊</span> Timesheets</button>
-          <button onClick={() => {setActiveTab("ithub"); setIsSidebarOpen(false);}} className={`text-left px-6 py-2.5 text-sm font-semibold transition-all flex items-center gap-3 ${activeTab === "ithub" ? "bg-blue-500/10 text-blue-400 border-r-2 border-blue-500" : "hover:bg-slate-800/50 hover:text-white"}`}><span className="text-lg">💻</span> IT Helpdesk</button>
-          <button onClick={() => {setActiveTab("learning"); setIsSidebarOpen(false);}} className={`text-left px-6 py-2.5 text-sm font-semibold transition-all flex items-center gap-3 ${activeTab === "learning" ? "bg-blue-500/10 text-blue-400 border-r-2 border-blue-500" : "hover:bg-slate-800/50 hover:text-white"}`}><span className="text-lg">🎓</span> Learning Hub</button>
-          <button onClick={() => {setActiveTab("performance"); setIsSidebarOpen(false);}} className={`text-left px-6 py-2.5 text-sm font-semibold transition-all flex items-center gap-3 ${activeTab === "performance" ? "bg-blue-500/10 text-blue-400 border-r-2 border-blue-500" : "hover:bg-slate-800/50 hover:text-white"}`}><span className="text-lg">🎯</span> Goals & OKRs</button>
-          <button onClick={() => {setActiveTab("policies"); setIsSidebarOpen(false);}} className={`text-left px-6 py-2.5 text-sm font-semibold transition-all flex items-center gap-3 ${activeTab === "policies" ? "bg-blue-500/10 text-blue-400 border-r-2 border-blue-500" : "hover:bg-slate-800/50 hover:text-white"}`}><span className="text-lg">✍️</span> Handbooks</button>
-          <button onClick={() => {setActiveTab("weekly-reports"); setIsSidebarOpen(false);}} className={`text-left px-6 py-2.5 text-sm font-semibold transition-all flex items-center gap-3 ${activeTab === "weekly-reports" ? "bg-blue-500/10 text-blue-400 border-r-2 border-blue-500" : "hover:bg-slate-800/50 hover:text-white"}`}><span className="text-lg">📈</span> Weekly Reports</button>
-          <button onClick={() => {setActiveTab("onboarding"); setIsSidebarOpen(false);}} className={`text-left px-6 py-2.5 text-sm font-semibold transition-all flex items-center gap-3 ${activeTab === "onboarding" ? "bg-blue-500/10 text-blue-400 border-r-2 border-blue-500" : "hover:bg-slate-800/50 hover:text-white"}`}><span className="text-lg">🚀</span> Onboarding</button>
-          
-          <div className="text-[10px] font-black text-slate-500 tracking-widest uppercase mt-6 mb-2 px-6">Safety</div>
-          <button onClick={() => {setActiveTab("safety"); setIsSidebarOpen(false);}} className={`text-left px-6 py-2.5 text-sm font-semibold transition-all flex items-center gap-3 ${activeTab === "safety" ? "bg-red-500/10 text-red-400 border-r-2 border-red-500" : "hover:bg-slate-800/50 hover:text-red-400"}`}><span className="text-lg">🚑</span> First Responders</button>
-          <button onClick={() => {setActiveTab("oncall"); setIsSidebarOpen(false);}} className={`text-left px-6 py-2.5 text-sm font-semibold transition-all flex items-center gap-3 ${activeTab === "oncall" ? "bg-red-500/10 text-red-400 border-r-2 border-red-500" : "hover:bg-slate-800/50 hover:text-red-400"}`}><span className="text-lg">🌙</span> On-Call Roster</button>
-        </div>
-
-        <div className="p-6 border-t border-slate-800 bg-slate-900/50">
-          <div className="flex items-center gap-3 mb-4 cursor-pointer hover:opacity-80 transition-opacity" onClick={() => setActiveTab("my-profile")}>
-            {staffData.photoUrl ? (
-              <img src={staffData.photoUrl} alt="Profile" className="w-10 h-10 rounded-lg object-cover border border-slate-700 shadow-sm" />
-            ) : (
-              <div className="w-10 h-10 rounded-lg bg-slate-700 flex items-center justify-center font-bold text-sm text-white shadow-sm">{staffData.name.charAt(0)}</div>
-            )}
-            <div className="overflow-hidden">
-              <div className="text-sm font-bold text-white truncate">{staffData.name}</div>
-              <div className="text-[10px] text-slate-400 font-mono tracking-widest">{staffData.employeeId}</div>
-            </div>
-          </div>
-          <button onClick={() => signOut(auth)} className="w-full py-2.5 border border-slate-700 text-slate-300 hover:bg-slate-800 hover:text-white text-[10px] font-bold uppercase tracking-widest rounded-lg transition-all">Sign Out</button>
-        </div>
-      </aside>
+      {/* Keep all your page tabs! */}
+      {activeTab === "my-tasks" && <MyTasks tasks={tasks} updateTaskStatus={updateTaskStatus} />}
+      {/* ... KEEP PASTING THE REST OF YOUR ACTIVETAB COMPONENTS HERE ... */}
+      
+    </DashboardLayout>
+  );
+}
 
       <main className="flex-1 h-screen overflow-y-auto">
         <header className="bg-white border-b border-gray-200 px-4 md:px-8 py-4 flex justify-between items-center sticky top-0 z-10 shadow-sm">
