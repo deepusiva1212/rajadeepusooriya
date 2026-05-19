@@ -1,133 +1,114 @@
 import { useState, useEffect } from "react";
+import Joyride, { STATUS } from "react-joyride";
 import { db } from "./firebase";
 import { doc, getDoc, setDoc } from "firebase/firestore";
 
 export default function SystemTour({ userEmail, forceStart, onClose }) {
-  const [isVisible, setIsVisible] = useState(false);
-  const [currentStep, setCurrentStep] = useState(0);
+  const [run, setRun] = useState(false);
 
+  // 🎯 THE TOUR STEPS
+  // "target" looks for a specific CSS class name on your website
   const steps = [
     {
+      target: "body", // Highlights the center of the screen
       title: "Welcome to RDS Enterprise 🚀",
-      desc: "Welcome to Raja Deepu Sooriya Private Limited. This portal is your central hub for all corporate operations, tasks, and communications.",
-      icon: "🏢"
+      content: "This portal is your central hub for all corporate operations. Let's take a quick 4-step tour to show you how things work.",
+      placement: "center",
+      disableBeacon: true,
     },
     {
-      title: "My Workspace ✅",
-      desc: "Here you will find your daily assigned Tasks, your Private Notepad, and the Request Leave system. Always check your Kanban board first thing in the morning.",
-      icon: "📋"
+      target: ".tour-my-tasks", // We will add this class to the Tasks button next!
+      title: "Your Workspace ✅",
+      content: "Start your day here. You can view your assigned tasks, drag-and-drop them to update their status, and manage your private notepad.",
+      placement: "right",
     },
     {
+      target: ".tour-culture",
       title: "Company & Culture 🔥",
-      desc: "Stay updated! Read the latest News, sign your mandatory Handbooks & NDAs, and give Kudos to your teammates.",
-      icon: "🤝"
+      content: "Stay connected. Check this section to read company news, sign your mandatory NDAs, and give Kudos to your teammates.",
+      placement: "right",
     },
     {
+      target: ".tour-tools",
       title: "Operations & Tools ⏱️",
-      desc: "Track your Attendance via the heatmap, submit your Weekly OKR Reports, and complete your Day-1 Onboarding Checklist.",
-      icon: "⚙️"
+      content: "This is for HR tracking. View your attendance heatmap, submit your Weekly OKR progress, and access IT software credentials.",
+      placement: "right",
     },
     {
-      title: "Global Chat Widget 💬",
-      desc: "Look at the bottom right of your screen. You can use this floating chat bubble to instantly communicate with the Director and other team members at any time.",
-      icon: "💬"
+      target: ".tour-chat-widget", // We will add this to the floating chat bubble!
+      title: "Global Chat 💬",
+      content: "Look down here! You can use this floating chat bubble to instantly message the Director and other team members at any time.",
+      placement: "top-end",
     }
   ];
 
+  // Check Firebase to see if they already completed the tour
   useEffect(() => {
     const checkTourStatus = async () => {
       if (forceStart) {
-        setIsVisible(true);
-        setCurrentStep(0);
+        setRun(true);
         return;
       }
-
       try {
         const safeEmail = userEmail.replace(/[^a-zA-Z0-9]/g, '_').toLowerCase();
         const docRef = doc(db, "user_preferences", safeEmail);
         const docSnap = await getDoc(docRef);
-        
-        // If the document doesn't exist or tour is not completed, show it
         if (!docSnap.exists() || !docSnap.data().tourCompleted) {
-          setIsVisible(true);
+          setRun(true); // Start the tour!
         }
       } catch (e) {
         console.error("Failed to check tour status");
       }
     };
-
     if (userEmail) checkTourStatus();
   }, [userEmail, forceStart]);
 
-  const finishTour = async () => {
-    setIsVisible(false);
-    if (onClose) onClose();
+  // Handle when the user clicks "Skip" or finishes the last step
+  const handleJoyrideCallback = async (data) => {
+    const { status } = data;
+    const finishedStatuses = [STATUS.FINISHED, STATUS.SKIPPED];
     
-    try {
-      const safeEmail = userEmail.replace(/[^a-zA-Z0-9]/g, '_').toLowerCase();
-      await setDoc(doc(db, "user_preferences", safeEmail), { tourCompleted: true }, { merge: true });
-    } catch (e) {
-      console.error("Failed to save tour completion");
+    if (finishedStatuses.includes(status)) {
+      setRun(false);
+      if (onClose) onClose();
+      
+      // Save to Firebase so it doesn't bother them again
+      try {
+        const safeEmail = userEmail.replace(/[^a-zA-Z0-9]/g, '_').toLowerCase();
+        await setDoc(doc(db, "user_preferences", safeEmail), { tourCompleted: true }, { merge: true });
+      } catch (e) {
+        console.error("Failed to save tour completion");
+      }
     }
   };
 
-  const nextStep = () => {
-    if (currentStep < steps.length - 1) setCurrentStep(currentStep + 1);
-    else finishTour();
-  };
-
-  const prevStep = () => {
-    if (currentStep > 0) setCurrentStep(currentStep - 1);
-  };
-
-  if (!isVisible) return null;
-
   return (
-    <div className="fixed inset-0 z-[200] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 animate-fade-in">
-      <div className="bg-white max-w-md w-full rounded-2xl shadow-2xl overflow-hidden flex flex-col relative">
-        
-        {/* Progress Bar Header */}
-        <div className="w-full bg-slate-100 h-2">
-          <div 
-            className="bg-indigo-600 h-2 transition-all duration-300" 
-            style={{ width: `${((currentStep + 1) / steps.length) * 100}%` }}
-          ></div>
-        </div>
-
-        <div className="p-8 text-center flex-1">
-          <div className="text-6xl mb-4 animate-bounce">{steps[currentStep].icon}</div>
-          <h2 className="font-display text-2xl font-black text-slate-900 mb-3">{steps[currentStep].title}</h2>
-          <p className="text-sm text-slate-600 leading-relaxed min-h-[80px]">
-            {steps[currentStep].desc}
-          </p>
-        </div>
-
-        {/* Controls Footer */}
-        <div className="bg-slate-50 p-4 border-t border-slate-100 flex justify-between items-center">
-          <button 
-            onClick={finishTour}
-            className="text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-slate-700 transition-colors"
-          >
-            Skip Tour
-          </button>
-          
-          <div className="flex gap-2">
-            <button 
-              onClick={prevStep}
-              disabled={currentStep === 0}
-              className="px-4 py-2 rounded-lg text-xs font-bold bg-white border border-slate-200 text-slate-600 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-slate-100 transition-colors"
-            >
-              Back
-            </button>
-            <button 
-              onClick={nextStep}
-              className="px-6 py-2 rounded-lg text-xs font-bold bg-indigo-600 text-white hover:bg-indigo-700 transition-colors shadow-sm"
-            >
-              {currentStep === steps.length - 1 ? "Get Started" : "Next ➔"}
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
+    <Joyride
+      steps={steps}
+      run={run}
+      continuous={true} // Shows a "Next" button instead of closing
+      showSkipButton={true} // Allows them to skip the tour
+      callback={handleJoyrideCallback}
+      styles={{
+        options: {
+          primaryColor: '#4f46e5', // Indigo-600 to match your brand
+          backgroundColor: '#ffffff',
+          textColor: '#0f172a',
+          overlayColor: 'rgba(15, 23, 42, 0.7)', // Dark slate blur
+          zIndex: 1000,
+        },
+        tooltip: {
+          borderRadius: '12px',
+          fontFamily: '"Inter", sans-serif',
+          padding: '20px',
+        },
+        buttonNext: {
+          fontWeight: 'bold',
+          fontSize: '12px',
+          textTransform: 'uppercase',
+          letterSpacing: '0.05em',
+        }
+      }}
+    />
   );
 }
