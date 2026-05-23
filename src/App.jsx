@@ -14,6 +14,7 @@ import PageTransitionBar from "./PageTransitionBar";
 import Blog from "./Blog";
 import Testimonials from "./Testimonials";
 // Render it: <Testimonials />
+import { useSEO } from "./hooks/useSEO";
 
 // ─── Utility ─────────────────────────────────────────────────────────────────
 function useInView(threshold = 0.15) {
@@ -462,6 +463,8 @@ export default function App() {
     const path = window.location.pathname.replace("/", "");
     return path || "home";
   });
+
+  useSEO(view);
 
   useEffect(() => {
     const handlePopState = () => {
