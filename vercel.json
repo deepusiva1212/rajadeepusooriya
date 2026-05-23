@@ -1,5 +1,55 @@
 {
   "rewrites": [
-    { "source": "/(.*)", "destination": "/index.html" }
+    { "source": "/internships",          "destination": "/index.html" },
+    { "source": "/about-more",           "destination": "/index.html" },
+    { "source": "/director-raja",        "destination": "/index.html" },
+    { "source": "/director-deepu",       "destination": "/index.html" },
+    { "source": "/director-sooriya",     "destination": "/index.html" },
+    { "source": "/privacy",              "destination": "/index.html" },
+    { "source": "/terms",                "destination": "/index.html" },
+    { "source": "/disclaimer",           "destination": "/index.html" },
+    { "source": "/internship-terms",     "destination": "/index.html" },
+    { "source": "/internship-privacy",   "destination": "/index.html" },
+    { "source": "/employee",             "destination": "/index.html" },
+    { "source": "/director",             "destination": "/index.html" },
+    { "source": "/admin",                "destination": "/index.html" },
+    { "source": "/(.*)",                 "destination": "/index.html" }
+  ],
+  "headers": [
+    {
+      "source": "/og-image.png",
+      "headers": [
+        { "key": "Cache-Control", "value": "public, max-age=86400, stale-while-revalidate=604800" }
+      ]
+    },
+    {
+      "source": "/sitemap.xml",
+      "headers": [
+        { "key": "Cache-Control", "value": "public, max-age=86400" },
+        { "key": "Content-Type",  "value": "application/xml; charset=utf-8" }
+      ]
+    },
+    {
+      "source": "/robots.txt",
+      "headers": [
+        { "key": "Cache-Control", "value": "public, max-age=86400" }
+      ]
+    },
+    {
+      "source": "/site.webmanifest",
+      "headers": [
+        { "key": "Content-Type", "value": "application/manifest+json" }
+      ]
+    },
+    {
+      "source": "/(.*)",
+      "headers": [
+        { "key": "X-Content-Type-Options",            "value": "nosniff" },
+        { "key": "X-Frame-Options",                   "value": "DENY" },
+        { "key": "X-XSS-Protection",                  "value": "1; mode=block" },
+        { "key": "Referrer-Policy",                   "value": "strict-origin-when-cross-origin" },
+        { "key": "Permissions-Policy",                "value": "camera=(), microphone=(), geolocation=()" }
+      ]
+    }
   ]
 }
