@@ -356,16 +356,7 @@ export default function EmployeePortal() {
         </div>
       </main>
 
-      <SystemTour 
-        userEmail={staffData.email} 
-        forceStart={manualTourTrigger} 
-        onClose={() => setManualTourTrigger(false)} 
-      />
       
-      <ChatWidget 
-        userName={staffData.name} 
-        userEmail={staffData.email} 
-      />
 
     </div>
   );
