@@ -353,12 +353,8 @@ export default function EmployeePortal() {
           {activeTab === "weekly-reports" && <WeeklyReports userName={staffData.name} userEmail={staffData.email} role={staffData.role} />}
           {activeTab === "onboarding" && <OnboardingChecklist userEmail={staffData.email} />}
 
-        </div>
-      </main>
-        
-
-      
-
-    </div>
+      </div>
+    </main>
+  </div>
   );
 }
