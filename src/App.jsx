@@ -15,6 +15,7 @@ import Blog from "./Blog";
 import Testimonials from "./Testimonials";
 // Render it: <Testimonials />
 import { useSEO } from "./hooks/useSEO";
+import FAQ from "./FAQ";
 
 // ─── Utility ─────────────────────────────────────────────────────────────────
 function useInView(threshold = 0.15) {
@@ -494,6 +495,7 @@ export default function App() {
           <About navigateTo={navigateTo} />
           <CoreValues />
           <Brands />
+          <FAQ navigateTo={navigateTo} />
           {/* 📰 ADDS LIVE PUBLIC BLOG STREAM */}
             <Blog />
           <Contact />
