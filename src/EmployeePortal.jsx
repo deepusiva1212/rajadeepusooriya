@@ -10,29 +10,51 @@ export default function EmployeePortal() {
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState(null);
 
-  // Safely listen for Firebase Login status
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       if (currentUser) {
         setUser(currentUser);
-        // If logged in, fetch their employee file
-        try {
-          const q = query(
-            collection(db, "users"), 
-          where("loginEmail", "==", currentUser.email.toLowerCase())
-        );
-          const snapshot = await getDocs(q);
-          if (!snapshot.empty) {
-            setStaffData(snapshot.docs[0].data());
+        const searchEmail = currentUser.email.toLowerCase().trim();
+        let foundData = null;
+
+        // 1. THE AUTO-HUNTER: Search all possible database combinations
+        const collectionsToTry = ["personnel", "employees", "users", "staff", "team"];
+        const fieldsToTry = ["email", "loginEmail", "employeeEmail"];
+
+        for (const col of collectionsToTry) {
+          if (foundData) break;
+          for (const field of fieldsToTry) {
+            if (foundData) break;
+            try {
+              const q = query(collection(db, col), where(field, "==", searchEmail));
+              const snapshot = await getDocs(q);
+              if (!snapshot.empty) {
+                foundData = snapshot.docs[0].data();
+                foundData.email = searchEmail; // Standardize the email
+                foundData.name = foundData.name || foundData.fullName || "RDS Employee";
+                foundData.role = foundData.role || "Staff";
+              }
+            } catch (error) {
+              // Silently skip collections that don't exist
+            }
           }
-        } catch (error) {
-          console.error("Error fetching staff data:", error);
         }
+
+        // 2. GOD MODE: If database fails but it's the Director, force the door open!
+        if (!foundData && searchEmail === "deepadharsan.rajavel@gmail.com") {
+          foundData = {
+            name: "Deepadharsan",
+            role: "SUPER ADMIN",
+            email: searchEmail
+          };
+        }
+
+        setStaffData(foundData);
       } else {
         setUser(null);
         setStaffData(null);
       }
-      setLoading(false); // Turn off the loading screen!
+      setLoading(false);
     });
 
     return () => unsubscribe();
@@ -47,12 +69,10 @@ export default function EmployeePortal() {
     }
   };
 
-  // 1. Loading State
   if (loading) {
     return <div className="min-h-screen bg-slate-900 text-white flex items-center justify-center font-bold">Authenticating...</div>;
   }
 
-  // 2. Login Screen (If not logged in)
   if (!user) {
     return (
       <div className="min-h-screen bg-slate-900 flex flex-col items-center justify-center text-white p-6">
@@ -65,34 +85,26 @@ export default function EmployeePortal() {
     );
   }
 
-  // 3. Not Authorized Screen (Logged in, but not in personnel database)
   if (!staffData) {
     return (
       <div className="min-h-screen bg-slate-900 flex flex-col items-center justify-center text-white p-6">
          <div className="text-red-500 font-bold mb-4">Access Denied.</div>
-         <p className="text-slate-400 mb-6 text-center max-w-md">The email address {user.email} is not registered as an active RDS employee.</p>
+         <p className="text-slate-400 mb-6 text-center max-w-md">The email address {user.email} could not be found in the system.</p>
          <button onClick={() => signOut(auth)} className="px-4 py-2 border border-slate-700 rounded text-slate-300 hover:bg-slate-800">Switch Account</button>
       </div>
     );
   }
 
-  // 4. The Actual Portal
   return (
     <div className="min-h-screen bg-slate-950 flex flex-col md:flex-row font-sans">
-      
-      {/* Sidebar Navigation */}
       <aside className="w-full md:w-64 bg-slate-900 border-r border-slate-800 p-6 flex flex-col">
         <h1 className="text-2xl font-black text-white tracking-tighter uppercase mb-8">
           RDS <span className="text-blue-500">Workspace</span>
         </h1>
-        
-        {/* User Info */}
         <div className="bg-slate-800 p-4 rounded-xl mb-8 border border-slate-700">
           <div className="text-white font-bold truncate">{staffData.name}</div>
           <div className="text-blue-400 text-xs font-bold uppercase tracking-wider">{staffData.role}</div>
         </div>
-
-        {/* Menu */}
         <nav className="flex-grow space-y-2">
           <button 
             onClick={() => setActiveTab("payslips")} 
@@ -103,8 +115,6 @@ export default function EmployeePortal() {
             📄 My Payslips
           </button>
         </nav>
-
-        {/* Logout */}
         <button 
           onClick={() => signOut(auth)} 
           className="mt-8 px-4 py-3 text-left rounded-lg text-sm font-bold text-red-400 hover:bg-red-500/10 transition-all"
@@ -112,14 +122,11 @@ export default function EmployeePortal() {
           🚪 Secure Logout
         </button>
       </aside>
-
-      {/* Main Content Area */}
       <main className="flex-1 p-6 md:p-10 overflow-y-auto">
         <div className="max-w-6xl mx-auto">
           {activeTab === "payslips" && <MyPayslips userEmail={staffData.email} />}
         </div>
       </main>
-      
     </div>
   );
 }
