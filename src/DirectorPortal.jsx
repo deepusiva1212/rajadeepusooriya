@@ -191,7 +191,9 @@ export default function DirectorPortal() {
           <button onClick={() => setActiveTab("analytics")} className={`text-left px-4 py-3 rounded-sm text-sm font-bold transition-colors ${activeTab === "analytics" ? "bg-white/10 text-corp-gold border-r-2 border-corp-gold" : "text-gray-400 hover:text-white"}`}>📈 Enterprise Analytics</button>
           <button onClick={() => setActiveTab("manage-blog")} className={`text-left px-4 py-3 rounded-sm text-sm font-bold transition-colors ${activeTab === "manage-blog" ? "bg-white/10 text-corp-gold border-r-2 border-corp-gold" : "text-gray-400 hover:text-white"}`}>📰 Manage Blog Feed</button>
           <button onClick={() => setActiveTab("broadcast")} className={`text-left px-4 py-3 rounded-sm text-sm font-bold transition-colors ${activeTab === "broadcast" ? "bg-white/10 text-corp-gold border-r-2 border-corp-gold" : "text-gray-400 hover:text-white"}`}>📢 Emergency Broadcast</button>
-          <button onClick={() => setActiveTab("payroll")} ... >💰 Issue Payslips</button>
+          <button onClick={() => setActiveTab("payroll")} className="flex items-center gap-3 w-full px-4 py-3 rounded-lg text-sm font-bold text-slate-400 hover:text-white hover:bg-slate-800 transition-all text-left">
+  💰 Issue Payslips
+</button>
 
 {staffData?.role === "Super Admin" && (
   <button onClick={() => setActiveTab("analytics")} className={`text-left px-4 py-3 rounded-sm text-sm font-bold transition-colors ${activeTab === "analytics" ? "bg-white/10 text-corp-gold" : "text-gray-400 hover:text-white"}`}>📈 HR Analytics</button>
