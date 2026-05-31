@@ -23,6 +23,7 @@ import AdminAnalytics from "./AdminAnalytics";
 import Blog from "./Blog";
 import BroadcastManager from "./BroadcastManager";
 import ChatWidget from "./ChatWidget";
+import PayslipManager from "./PayslipManager";
 
 
 export default function DirectorPortal() {
@@ -190,6 +191,7 @@ export default function DirectorPortal() {
           <button onClick={() => setActiveTab("analytics")} className={`text-left px-4 py-3 rounded-sm text-sm font-bold transition-colors ${activeTab === "analytics" ? "bg-white/10 text-corp-gold border-r-2 border-corp-gold" : "text-gray-400 hover:text-white"}`}>📈 Enterprise Analytics</button>
           <button onClick={() => setActiveTab("manage-blog")} className={`text-left px-4 py-3 rounded-sm text-sm font-bold transition-colors ${activeTab === "manage-blog" ? "bg-white/10 text-corp-gold border-r-2 border-corp-gold" : "text-gray-400 hover:text-white"}`}>📰 Manage Blog Feed</button>
           <button onClick={() => setActiveTab("broadcast")} className={`text-left px-4 py-3 rounded-sm text-sm font-bold transition-colors ${activeTab === "broadcast" ? "bg-white/10 text-corp-gold border-r-2 border-corp-gold" : "text-gray-400 hover:text-white"}`}>📢 Emergency Broadcast</button>
+          <button onClick={() => setActiveTab("payroll")} ... >💰 Issue Payslips</button>
 
 {staffData?.role === "Super Admin" && (
   <button onClick={() => setActiveTab("analytics")} className={`text-left px-4 py-3 rounded-sm text-sm font-bold transition-colors ${activeTab === "analytics" ? "bg-white/10 text-corp-gold" : "text-gray-400 hover:text-white"}`}>📈 HR Analytics</button>
@@ -233,6 +235,7 @@ export default function DirectorPortal() {
         {activeTab === "analytics" && <AdminAnalytics />}
         {activeTab === "manage-blog" && <Blog isDashboardMode={true} role={staffData.role} />}
         {activeTab === "broadcast" && <BroadcastManager userName={staffData.name} />}
+        {activeTab === "payroll" && <PayslipManager />}
         
         {activeTab === "delegate-tasks" && (
           <div className="animate-fade-in grid lg:grid-cols-3 gap-8">
