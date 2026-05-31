@@ -18,9 +18,9 @@ export default function EmployeePortal() {
         // If logged in, fetch their employee file
         try {
           const q = query(
-            collection(db, "personnel"),
-            where("email", "==", currentUser.email.toLowerCase())
-          );
+            collection(db, "users"), 
+          where("loginEmail", "==", currentUser.email.toLowerCase())
+        );
           const snapshot = await getDocs(q);
           if (!snapshot.empty) {
             setStaffData(snapshot.docs[0].data());
