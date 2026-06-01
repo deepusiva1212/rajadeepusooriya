@@ -12,6 +12,8 @@ import Blog from "./Blog";
 import Testimonials from "./Testimonials";
 import FAQ from "./FAQ"; // ✅ INCLUDED FAQ IMPORT
 import { useSEO } from "./hooks/useSEO";   // ✅ FIX 1: import was missing
+import CookieBanner from "./CookieBanner";
+import { useConsent } from "./hooks/useConsent";
 
 // ─── Utility ─────────────────────────────────────────────────────────────────
 function useInView(threshold = 0.15) {
@@ -588,6 +590,7 @@ export default function App() {
 
   // ✅ FIX 1: useSEO wired in — updates title + all meta tags on every navigation
   useSEO(view);
+  const { consent, accept, decline } = useConsent();
 
   useEffect(() => {
     const handlePopState = () => {
@@ -648,6 +651,7 @@ export default function App() {
         <Footer navigateTo={navigateTo} />
       )}
       <WhatsAppButton />
+      <CookieBanner consent={consent} onAccept={accept} onDecline={decline} />
     </div>
   );
 }
