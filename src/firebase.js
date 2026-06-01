@@ -2,9 +2,9 @@
  * src/firebase.js  (updated)
  * ─────────────────────────────────────────────────────────────────────────────
  * Key change from original:
- *   getAnalytics() is NOT called on import.
- *   Instead, initAnalytics() is exported and called lazily by useConsent.js
- *   ONLY after the user explicitly accepts cookies.
+ * getAnalytics() is NOT called on import.
+ * Instead, initAnalytics() is exported and called lazily by useConsent.js
+ * ONLY after the user explicitly accepts cookies.
  *
  * This ensures zero analytics data is collected before consent — required by
  * India's DPDP Act 2023 and recommended best practice for all websites.
@@ -17,13 +17,13 @@ import { getAuth, GoogleAuthProvider } from "firebase/auth";
 import { getAnalytics, isSupported } from "firebase/analytics";
 
 const firebaseConfig = {
-  apiKey:            import.meta.env.VITE_FIREBASE_API_KEY,
-  authDomain:        import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
-  projectId:         import.meta.env.VITE_FIREBASE_PROJECT_ID,
-  storageBucket:     import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
-  appId:             import.meta.env.VITE_FIREBASE_APP_ID,
-  measurementId:     import.meta.env.VITE_FIREBASE_MEASUREMENT_ID,
+  apiKey:            "AIzaSyCGwFIkqRsBC5BFnTy_q7OnRYI_-eM9nrs",
+  authDomain:        "rajadeepusooriya-1302d.firebaseapp.com",
+  projectId:         "rajadeepusooriya-1302d",
+  storageBucket:     "rajadeepusooriya-1302d.firebasestorage.app",
+  messagingSenderId: "1008463369368",
+  appId:             "1:1008463369368:web:0882106589216924abeced",
+  measurementId:     "G-HTM5NZKF8H"
 };
 
 // ── Core services (always initialised — no personal data collected) ──────────
