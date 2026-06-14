@@ -14,6 +14,8 @@ import FAQ from "./FAQ"; // ✅ INCLUDED FAQ IMPORT
 import { useSEO } from "./hooks/useSEO";   // ✅ FIX 1: import was missing
 import CookieBanner from "./CookieBanner";
 import { useConsent } from "./hooks/useConsent";
+import Admin        from "./Admin";         // ✅ FIX 1: Admin portal route
+import ClientPortal from "./ClientPortal";  // ✅ FIX 2: Client portal route
 
 // ─── Utility ─────────────────────────────────────────────────────────────────
 function useInView(threshold = 0.15) {
@@ -544,6 +546,8 @@ function Footer({ navigateTo }) {   // ✅ FIX 4: prop was missing in original c
             <div className="space-y-3 mb-8">
               <a href="https://www.mytripraja.com/" target="_blank" rel="noopener noreferrer" className="block text-gray-400 hover:text-corp-gold text-xs transition-colors font-body">MyTripRaja</a>
               <a href="https://marketerraja.com/" target="_blank" rel="noopener noreferrer" className="block text-gray-400 hover:text-corp-gold text-xs transition-colors font-body">MarketerRaja</a>
+              <button onClick={() => navigateTo("admin")}  className="block text-gray-400 hover:text-corp-gold text-xs transition-colors font-body text-left">Admin Portal</button>
+              <button onClick={() => navigateTo("client")} className="block text-gray-400 hover:text-corp-gold text-xs transition-colors font-body text-left">Client Portal</button>
             </div>
             <div className="text-white font-bold text-xs tracking-widest uppercase mb-5">Registered Address</div>
             <address className="text-gray-400 text-xs leading-relaxed not-italic font-body">
@@ -612,7 +616,7 @@ export default function App() {
       <Background />
       <PageTransitionBar />
 
-      {!["admin", "employee", "director"].includes(view) && (
+      {!["admin", "employee", "director", "client"].includes(view) && (
         <Navbar view={view} navigateTo={navigateTo} />
       )}
 
@@ -632,6 +636,8 @@ export default function App() {
         </>
       )}
 
+      {view === "admin"             && <Admin />}
+      {view === "client"            && <ClientPortal />}
       {view === "internships"       && <InternshipPage />}
       {view === "internship-terms"  && <InternshipTerms />}
       {view === "internship-privacy"&& <InternshipPrivacy />}
@@ -646,8 +652,7 @@ export default function App() {
         />
       )}
 
-      {!["admin", "employee", "director"].includes(view) && (
-        // ✅ FIX 4: navigateTo prop now passed
+      {!["admin", "employee", "director", "client"].includes(view) && (
         <Footer navigateTo={navigateTo} />
       )}
       <WhatsAppButton />
