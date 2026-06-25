@@ -2,6 +2,79 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ═══════════════════════════════════════════════════════════════════════════
+   GLOBAL INPUT FIX
+   ───────────────────────────────────────────────────────────────────────────
+   Problem: inputs/textareas/selects without explicit text-color classes
+   inherit the page's white text color, making typed text invisible on
+   white/light backgrounds.
+
+   Fix: force all form elements to have dark text + white background by
+   default. Individual components can still override with Tailwind classes
+   (e.g. dark portal inputs that need light text use text-white bg-slate-800).
+   ─────────────────────────────────────────────────────────────────────────── */
+
+@layer base {
+  input,
+  input[type="text"],
+  input[type="email"],
+  input[type="tel"],
+  input[type="number"],
+  input[type="date"],
+  input[type="time"],
+  input[type="password"],
+  input[type="search"],
+  input[type="url"],
+  textarea,
+  select {
+    color: #111827;           /* gray-900 — dark text, always readable */
+    background-color: #ffffff; /* white background */
+    -webkit-text-fill-color: #111827; /* Safari/Chrome autofill override */
+  }
+
+  /* Placeholder text — gray so it's clearly different from typed text */
+  input::placeholder,
+  textarea::placeholder {
+    color: #9CA3AF;           /* gray-400 */
+    -webkit-text-fill-color: #9CA3AF;
+  }
+
+  /* Dark portal inputs (Employee, Director, Admin panels) —
+     these use bg-slate-* / bg-corp-blue-mid backgrounds.
+     Override back to light text when inside a dark container. */
+  .dark-portal input,
+  .dark-portal textarea,
+  .dark-portal select,
+  [class*="bg-slate-"] input,
+  [class*="bg-slate-"] textarea,
+  [class*="bg-slate-"] select {
+    color: #F1F5F9;           /* slate-100 */
+    background-color: transparent;
+    -webkit-text-fill-color: #F1F5F9;
+  }
+
+  [class*="bg-slate-"] input::placeholder,
+  [class*="bg-slate-"] textarea::placeholder {
+    color: #64748B;           /* slate-500 */
+    -webkit-text-fill-color: #64748B;
+  }
+
+  /* Chrome autofill background override — prevents yellow autofill box */
+  input:-webkit-autofill,
+  input:-webkit-autofill:hover,
+  input:-webkit-autofill:focus,
+  textarea:-webkit-autofill,
+  select:-webkit-autofill {
+    -webkit-box-shadow: 0 0 0 1000px #ffffff inset;
+    -webkit-text-fill-color: #111827;
+    transition: background-color 5000s ease-in-out 0s;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   ANIMATIONS
+   ─────────────────────────────────────────────────────────────────────────── */
+
 @layer utilities {
   .animate-blob {
     animation: blob 15s infinite alternate ease-in-out;
@@ -12,18 +85,18 @@
 }
 
 @keyframes blob {
-  0% { transform: translate(0px, 0px) scale(1); }
-  50% { transform: translate(40px, -60px) scale(1.1); }
+  0%   { transform: translate(0px, 0px)   scale(1);   }
+  50%  { transform: translate(40px, -60px) scale(1.1); }
   100% { transform: translate(-20px, 30px) scale(0.9); }
 }
 
 @keyframes blob-reverse {
-  0% { transform: translate(0px, 0px) scale(1); }
-  50% { transform: translate(-40px, 60px) scale(1.2); }
+  0%   { transform: translate(0px, 0px)    scale(1);   }
+  50%  { transform: translate(-40px, 60px) scale(1.2); }
   100% { transform: translate(30px, -30px) scale(0.8); }
 }
 
 @keyframes marquee {
-  0% { transform: translateX(0%); }
+  0%   { transform: translateX(0%);   }
   100% { transform: translateX(-50%); }
 }
